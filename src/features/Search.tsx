@@ -17,6 +17,8 @@ import {
   Timer,
   House,
   Zap,
+  Lock,
+  CornerDownLeft,
 } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import { errorLabel } from '../db/types';
@@ -25,6 +27,7 @@ import { exportBackup } from '../lib/backup';
 import { fmtDay } from '../lib/dates';
 import { activeSubjects } from '../lib/stats';
 import { startStudy } from './timerActions';
+import { lockNow } from '../lib/security';
 import { Modal, cx } from '../components/ui';
 
 interface Item {
@@ -51,6 +54,7 @@ function commands(nav: NavigateFunction): Item[] {
     a('log-flash', 'Log flashcards', I(Layers), () => openUI({ flashLog: true })),
     a('redo', 'Start redo', I(RotateCcw), () => nav(last() ? `/redo?subject=${last()}` : '/redo')),
     a('export', 'Export backup', I(Download), () => exportBackup()),
+    a('lock', 'Lock Cadence', I(Lock), () => lockNow(), '⇧⌘L'),
     s('/', 'Home', I(House)),
     s('/subjects', 'Subjects', I(BookOpen)),
     s('/mistakes', 'Mistakes', I(CircleAlert)),
@@ -199,6 +203,7 @@ export function SearchBox({ variant, onDone }: { variant: 'modal' | 'hero'; onDo
               <span className="r-icon">{it.icon}</span>
               <span className="r-main">{it.label}</span>
               {it.hint && <span className="r-hint">{it.hint}</span>}
+              <CornerDownLeft size={14} strokeWidth={1.8} className="r-go" />
             </button>
           </div>
         );
@@ -212,7 +217,9 @@ export function SearchBox({ variant, onDone }: { variant: 'modal' | 'hero'; onDo
         <div className="palette-input">
           <Search size={18} strokeWidth={1.5} className="muted" />
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder="Search or run a command…" aria-label="Search or run a command" />
-          <span className="kbd">esc</span>
+          <span className="kbd">
+            <kbd>esc</kbd>
+          </span>
         </div>
         {results}
       </>
@@ -220,21 +227,21 @@ export function SearchBox({ variant, onDone }: { variant: 'modal' | 'hero'; onDo
 
   return (
     <div className="hero-search">
-      <div className="ask">
-        {!q && !focused && (
-          <span className="ask-ph" aria-hidden="true">
-            <i className="fake-caret-inline" />
-            Search or add anything
-          </span>
-        )}
+      <div className="cmd">
+        <Search size={18} strokeWidth={1.7} />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={onKey}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          aria-label="Search or add anything"
+          placeholder="Search, jump to, or add anything"
+          aria-label="Search, jump to, or add anything"
         />
+        <span className="kbd">
+          <kbd>⌘</kbd>
+          <kbd>K</kbd>
+        </span>
       </div>
       {showResults && <div className="hero-results">{results}</div>}
     </div>
@@ -254,8 +261,11 @@ export function SearchTrigger() {
   return (
     <button type="button" className="search-trigger" onClick={() => openUI({ palette: true })} aria-label="Search (Ctrl K)">
       <Search size={16} strokeWidth={1.5} />
-      <span className="label">Search or run a command</span>
-      <span className="kbd">Ctrl K</span>
+      <span className="label">Search or jump to…</span>
+      <span className="kbd">
+        <kbd>⌘</kbd>
+        <kbd>K</kbd>
+      </span>
     </button>
   );
 }

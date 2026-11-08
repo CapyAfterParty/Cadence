@@ -23,7 +23,7 @@
 .bar {
   display: block;
   width: 100%;
-  max-width: 22px;
+  max-width: 1.4rem;
   border-radius: 11px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.08));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
@@ -40,7 +40,8 @@
 .bars-labels {
   display: flex;
   gap: 6px;
-  font-size: 11px;
+  font-size: var(--fs-11);
+  font-family: var(--mono);
   color: var(--text-2);
 }
 
@@ -99,47 +100,55 @@
 
 .heatmap {
   display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  gap: 0.22rem;
 }
 
 .heat-col {
   flex: 1;
-  min-width: 10px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.22rem;
 }
 
 .heat {
   width: 100%;
   aspect-ratio: 1;
-  max-height: 20px;
-  border-radius: 4px;
-  background: var(--track);
+  border-radius: 0.28rem;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  transition: transform var(--t-fast) var(--spring);
+}
+
+.heatmap .heat:hover {
+  transform: scale(1.5);
+  position: relative;
+  z-index: 1;
 }
 
 .heat.l1 {
-  background: rgba(255, 106, 43, 0.3);
+  background: #2c2a6a;
 }
 
 .heat.l2 {
-  background: rgba(255, 106, 43, 0.55);
+  background: linear-gradient(135deg, #8a5cff, #6b4dff);
 }
 
 .heat.l3 {
-  background: rgba(255, 106, 43, 0.8);
+  background: linear-gradient(135deg, #ff6bc1, #e0457b);
+  box-shadow: 0 0 0.45rem rgba(255, 79, 139, 0.45);
 }
 
 .heat.l4 {
-  background: var(--accent);
+  background: linear-gradient(135deg, #ffb06b, #ff6a3d);
+  box-shadow: 0 0 0.6rem rgba(255, 122, 61, 0.7);
 }
 
 .line-labels {
   position: relative;
   height: 16px;
-  font-size: 11px;
+  font-size: var(--fs-11);
+  font-family: var(--mono);
   color: var(--text-2);
 }
 

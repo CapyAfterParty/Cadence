@@ -2,11 +2,14 @@ import type { ReactNode } from 'react';
 import { SearchTrigger } from '../features/Search';
 import { RunningPill } from '../features/TimerController';
 
-/** Page title, page actions, and the always-visible search box. */
-export function Topbar({ title, children }: { title: ReactNode; children?: ReactNode }) {
+/** Page title (with an optional eyebrow), page actions, and the always-visible search. */
+export function Topbar({ title, eyebrow, children }: { title: ReactNode; eyebrow?: ReactNode; children?: ReactNode }) {
   return (
     <header className="topbar">
-      <h1>{title}</h1>
+      <div className="titles">
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <h1>{title}</h1>
+      </div>
       <RunningPill />
       {children}
       <SearchTrigger />

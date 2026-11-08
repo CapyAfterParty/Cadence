@@ -28,7 +28,7 @@ function PickSubject({ data }: { data: AllData }) {
   const subjects = activeSubjects(data);
   return (
     <div className="page">
-      <Topbar title="Redo" />
+      <Topbar eyebrow="Practice" title="Redo" />
       <Card>
         <h2 style={{ fontSize: 'var(--fs-17)', fontWeight: 600, marginBottom: 16 }}>Pick a subject</h2>
         {subjects.length === 0 ? (
@@ -73,7 +73,7 @@ function Setup({ data, subjectId, topicParam }: { data: AllData; subjectId: ID; 
 
   return (
     <div className="page">
-      <Topbar title={`Redo · ${subject.name}`}>
+      <Topbar eyebrow="Practice" title={`Redo · ${subject.name}`}>
         <Link to="/redo" className="btn">
           Change subject
         </Link>
@@ -160,7 +160,7 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
       <div className="page">
         <Topbar title={`Redo · ${subjectName}`} />
         <Card className="redo-card">
-          <h2 style={{ fontSize: 'var(--fs-22)', fontWeight: 600 }}>Session done</h2>
+          <h2 style={{ fontSize: 'var(--fs-24)', fontWeight: 600 }}>Session done</h2>
           <div className="grid-2">
             <Stat value={right.length} label="Right, now cleared" />
             <Stat value={wrong.length} label="Wrong, still in the queue" accent={wrong.length > 0} />

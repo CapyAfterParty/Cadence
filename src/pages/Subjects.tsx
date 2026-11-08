@@ -16,7 +16,7 @@ export default function Subjects() {
   const today = todayKey();
   return (
     <div className="page">
-      <Topbar title="Subjects" />
+      <Topbar eyebrow="Your library" title="Subjects" />
       <Card index={0}>
         <AddSubject count={data.subjects.length} />
       </Card>
@@ -33,11 +33,11 @@ export default function Subjects() {
             const days = s.nextTestDate ? daysBetween(today, s.nextTestDate) : null;
             return (
               <Link key={s.id} to={`/subjects/${s.id}`} style={{ textDecoration: 'none' }}>
-                <Card hoverable index={i + 1} className="subject-card">
+                <Card hoverable tilt tint={s.colour} index={i + 1} className="subject-card">
                   <div className="subject-head">
-                    <span className="swatch" style={{ background: s.colour }} />
+                    <span className="swatch" style={{ background: `linear-gradient(150deg, color-mix(in srgb, ${s.colour} 65%, white), ${s.colour} 55%, color-mix(in srgb, ${s.colour} 75%, black))`, ['--c' as string]: s.colour }} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 'var(--fs-22)', fontWeight: 600, letterSpacing: '-0.02em' }}>{s.name}</div>
+                      <div className="subject-name">{s.name}</div>
                       <div className="muted small">
                         {days == null ? 'No test date' : days < 0 ? 'Test date passed' : days === 0 ? 'Test today' : `Test in ${days} ${days === 1 ? 'day' : 'days'}`}
                       </div>

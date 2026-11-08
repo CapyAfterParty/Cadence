@@ -1,134 +1,28 @@
-.backdrop {
+.hero-photo {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 520px;
-  overflow: hidden;
-  pointer-events: none;
+  height: 62rem;
   z-index: 0;
-  opacity: 0.42;
+  pointer-events: none;
+  overflow: hidden;
+  animation: fade 1.2s var(--ease) both;
 }
 
-.backdrop.home {
-  height: 940px;
-  opacity: 1;
-}
-
-.bd-photo {
-  position: absolute;
-  inset: 0;
+.hero-photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 30%;
-}
-
-.bd-spot {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(60% 45% at 50% 0%, rgba(255, 160, 110, 0.28), transparent 70%),
-    radial-gradient(40% 50% at 15% 30%, rgba(255, 90, 40, 0.18), transparent 70%),
-    radial-gradient(40% 50% at 88% 25%, rgba(255, 79, 109, 0.14), transparent 70%);
-}
-
-.bd-layer {
-  position: absolute;
-  inset: -8% -6%;
-  width: 112%;
-  height: 116%;
-  will-change: transform;
-}
-
-.bd-layer.glow {
-  filter: blur(70px);
-  opacity: 0.75;
-  animation: drift-a 26s ease-in-out infinite alternate;
-}
-
-.bd-layer.mid {
-  filter: blur(22px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 45%, transparent 100%);
   opacity: 0.85;
-  mix-blend-mode: screen;
-  animation: drift-b 32s ease-in-out infinite alternate;
 }
 
-.bd-layer.silk {
-  filter: blur(0.6px);
-  opacity: 0.7;
-  animation: drift-b 32s ease-in-out infinite alternate;
-}
-
-.bd-beam {
-  position: absolute;
-  width: 900px;
-  height: 90px;
-  border-radius: 50%;
-  filter: blur(28px);
-  background: linear-gradient(90deg, transparent, rgba(255, 150, 90, 0.55), transparent);
-  will-change: transform;
-}
-
-.bd-beam.b1 {
-  top: 90px;
-  left: -220px;
-  transform: rotate(-28deg);
-  animation: beam 18s ease-in-out infinite alternate;
-}
-
-.bd-beam.b2 {
-  top: 40px;
-  right: -260px;
-  width: 700px;
-  transform: rotate(24deg);
-  opacity: 0.6;
-  animation: beam 22s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes drift-a {
-  to {
-    transform: translate3d(-50px, 24px, 0) rotate(-2deg) scale(1.05);
-  }
-}
-
-@keyframes drift-b {
-  to {
-    transform: translate3d(40px, -18px, 0) rotate(1.5deg);
-  }
-}
-
-@keyframes beam {
-  to {
-    translate: 60px 30px;
-    opacity: 0.35;
-  }
-}
-
-.bd-grain {
+.hero-photo::after {
+  content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.09;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-.bd-fade {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(120% 80% at 50% 10%, transparent 40%, rgba(10, 10, 12, 0.6) 100%),
-    linear-gradient(180deg, rgba(10, 10, 12, 0.15) 0%, rgba(10, 10, 12, 0) 30%, rgba(10, 10, 12, 0.55) 70%, var(--bg) 100%);
-}
-
-.backdrop.home .bd-photo + .bd-grain + .bd-fade {
-  background:
-    radial-gradient(90% 70% at 50% 25%, transparent 30%, rgba(10, 10, 12, 0.75) 100%),
-    linear-gradient(180deg, rgba(10, 10, 12, 0.35) 0%, rgba(10, 10, 12, 0.1) 35%, rgba(10, 10, 12, 0.7) 70%, var(--bg) 100%);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bd-layer,
-  .bd-beam {
-    animation: none !important;
-  }
+  background: radial-gradient(90% 70% at 50% 25%, transparent 30%, rgba(7, 7, 11, 0.75) 100%);
 }

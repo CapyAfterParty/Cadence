@@ -1,13 +1,17 @@
-import { useEffect } from 'react';
-import { HashRouter, Route, Routes } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Check, Undo2 } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
-import { Backdrop } from './components/Backdrop';
+import { HeroPhoto } from './components/Backdrop';
+import { Aurora } from './components/gl/Aurora';
 import { Button } from './components/ui';
 import { Palette } from './features/Search';
 import { BulkMistakes, QuickAddMistake } from './features/MistakeForms';
 import { FlashLog, LogPaper } from './features/LogForms';
 import { TimerController } from './features/TimerController';
-import { anyModalOpen, dismissToast, openUI, settings, toasts, ui } from './lib/state';
+import { LockScreen, Onboarding } from './features/Gate';
+import { anyModalOpen, dismissToast, openUI, settings, timer, toasts, ui } from './lib/state';
+import { boot, lockNow, lockState, markActive, security } from './lib/security';
 import Dashboard from './pages/Dashboard';
 import Subjects from './pages/Subjects';
 import SubjectHub from './pages/SubjectHub';
@@ -25,18 +29,49 @@ const isTyping = (el: EventTarget | null) =>
 function useGlobalKeys() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      const mod = e.ctrlKey || e.metaKey;
+      if (mod && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         ui.set((s) => ({ ...s, palette: !s.palette }));
         return;
       }
-      if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey && !isTyping(e.target) && !anyModalOpen()) {
+      if (mod && e.shiftKey && e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        lockNow();
+        return;
+      }
+      if (e.key.toLowerCase() === 'n' && !mod && !e.altKey && !isTyping(e.target) && !anyModalOpen()) {
         e.preventDefault();
         openUI({ quickAdd: { preset: { subjectId: settings.get().lastSubjectId } } });
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, []);
+}
+
+/** Locks after the chosen idle time. Never during a timed sprint (exam mode). */
+function useAutoLock() {
+  const last = useRef(Date.now());
+  useEffect(() => {
+    let lastMark = 0;
+    const bump = () => {
+      last.current = Date.now();
+      if (last.current - lastMark > 10_000) {
+        lastMark = last.current;
+        markActive();
+      }
+    };
+    const events = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'] as const;
+    events.forEach((ev) => addEventListener(ev, bump, { passive: true }));
+    const id = setInterval(() => {
+      const mins = security.get().autoLockMin;
+      if (mins > 0 && timer.get()?.kind !== 'sprint' && Date.now() - last.current > mins * 60_000) lockNow();
+    }, 15_000);
+    return () => {
+      events.forEach((ev) => removeEventListener(ev, bump));
+      clearInterval(id);
+    };
   }, []);
 }
 
@@ -59,8 +94,9 @@ function Toasts() {
     <div className="toasts" role="status" aria-live="polite">
       {list.map((t) => (
         <div key={t.id} className="toast">
-          <span>{t.message}</span>
-          {t.undo ? (
+          <span className="t-icon">{t.undo ? <Undo2 size={15} strokeWidth={2} /> : <Check size={16} strokeWidth={2.4} />}</span>
+          <span style={{ paddingRight: t.undo ? 0 : '0.9rem' }}>{t.message}</span>
+          {t.undo && (
             <Button
               size="sm"
               variant="white"
@@ -71,21 +107,28 @@ function Toasts() {
             >
               Undo
             </Button>
-          ) : (
-            <span style={{ width: 4 }} />
           )}
+          <span className="t-bar" style={{ animationDuration: t.undo ? '6s' : '3s' }} />
         </div>
       ))}
     </div>
   );
 }
 
-export default function App() {
-  useGlobalKeys();
+function intensityFor(path: string) {
+  if (path === '/') return 1.05;
+  if (path === '/settings') return 0.75;
+  return 0.5;
+}
+
+function AppShell() {
+  useAutoLock();
+  const { pathname } = useLocation();
   return (
-    <HashRouter>
+    <>
+      <Aurora intensity={intensityFor(pathname)} />
+      <HeroPhoto />
       <div className="shell">
-        <Backdrop />
         <Sidebar />
         <main className="main">
           <Routes>
@@ -105,6 +148,28 @@ export default function App() {
       </div>
       <Overlays />
       <TimerController />
+    </>
+  );
+}
+
+export default function App() {
+  useGlobalKeys();
+  const { phase } = lockState.use();
+  useEffect(() => {
+    boot();
+  }, []);
+  return (
+    <HashRouter>
+      {phase === 'unlocked' ? (
+        <AppShell />
+      ) : (
+        <>
+          <Aurora intensity={1.1} />
+          {phase === 'locked' && <LockScreen mode="local" />}
+          {phase === 'site' && <LockScreen mode="site" />}
+          {phase === 'onboarding' && <Onboarding />}
+        </>
+      )}
       <Toasts />
     </HashRouter>
   );

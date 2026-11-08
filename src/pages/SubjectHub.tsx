@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CircleAlert, FileText, ListPlus, NotebookPen, Play, Plus, RotateCcw, X } from 'lucide-react';
+import { CircleAlert, FileText, ImagePlus, ListPlus, NotebookPen, Play, Plus, RotateCcw, Settings2, Target, X } from 'lucide-react';
 import { db, newRow, useData, type AllData } from '../db/db';
 import type { Note, Subject, Topic, Weakness } from '../db/types';
 import { createTopic, deleteTopic } from '../db/ops';
@@ -9,7 +9,7 @@ import { dueMistakes, pct, subjectAverage, subjectPapers, topicWeakness } from '
 import { openUI, rememberSubject, settings } from '../lib/state';
 import { Button, Card, CardHead, Chip, Empty, ErrorPill, PageSkeleton, Stat, WeaknessPill } from '../components/ui';
 import { Topbar } from '../components/Topbar';
-import { Line } from '../components/charts/charts';
+import { MultiLine } from '../components/charts/fancy';
 import { ScanGrid, ScanUploadButton } from '../components/Scans';
 import { SubjectEditor } from '../components/SubjectEditor';
 import { startStudy } from '../features/timerActions';
@@ -55,9 +55,10 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
   return (
     <div className="page">
       <Topbar
+        eyebrow="Subject"
         title={
           <span className="row" style={{ gap: 12 }}>
-            <span className="subject-dot" style={{ background: subject.colour, width: 14, height: 14 }} />
+            <span className="swatch-sm" style={{ background: `linear-gradient(150deg, color-mix(in srgb, ${subject.colour} 65%, white), ${subject.colour} 55%, color-mix(in srgb, ${subject.colour} 75%, black))`, ['--c' as string]: subject.colour }} />
             {subject.name}
             {subject.archived && <span className="pill">Archived</span>}
           </span>
@@ -65,7 +66,7 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
       />
 
       <div className="grid-4">
-        <Card index={0}>
+        <Card index={0} tint={subject.colour}>
           <Stat value={avg == null ? null : Math.round(avg)} unit="%" label={`Average · target ${subject.targetPct}%`} accent={avg != null && avg < subject.targetPct} />
         </Card>
         <Card index={1}>
@@ -108,7 +109,7 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
       <div className="grid-2">
         <TopicsCard data={data} subject={subject} />
         <Card index={5}>
-          <CardHead title="Details" aside="Saves as you type" />
+          <CardHead icon={<Settings2 size={18} strokeWidth={SW} />} title="Details" aside="Saves as you type" />
           <SubjectEditor subject={subject} />
         </Card>
       </div>
@@ -121,7 +122,7 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
       <PapersCard data={data} subject={subject} />
 
       <Card index={9}>
-        <CardHead title="Scans" />
+        <CardHead icon={<ImagePlus size={18} strokeWidth={SW} />} tone="gold" title="Scans" />
         <ScanGrid ownerType="subject" ownerId={subject.id} emptyText="Upload scans of notes or marked work." />
       </Card>
     </div>
@@ -140,7 +141,7 @@ function TopicsCard({ data, subject }: { data: AllData; subject: Subject }) {
   };
   return (
     <Card index={4}>
-      <CardHead title="Weakest topics" aside="Click a topic to set its colour by hand" />
+      <CardHead icon={<Target size={18} strokeWidth={SW} />} tone="ember" title="Weakest topics" aside="Click a topic to set its colour by hand" />
       {withWeak.length === 0 ? (
         <p className="muted small" style={{ marginBottom: 16 }}>
           Topics show here, coloured by open mistakes and recent topic test scores.
@@ -182,7 +183,7 @@ function NotesCard({ data, subject, onAdd }: { data: AllData; subject: Subject; 
   const notes = data.notes.filter((n) => n.subjectId === subject.id).sort((a, b) => b.updatedAt - a.updatedAt);
   return (
     <Card index={6}>
-      <CardHead icon={<NotebookPen size={18} strokeWidth={SW} />} title="Notes" aside={`${notes.length}`} />
+      <CardHead icon={<NotebookPen size={18} strokeWidth={SW} />} tone="orchid" title="Notes" aside={`${notes.length}`} />
       {notes.length === 0 ? (
         <Empty text="No notes yet." action={<Button size="sm" onClick={onAdd}>Write a note</Button>} />
       ) : (
@@ -211,6 +212,7 @@ function MistakesCard({ data, subject }: { data: AllData; subject: Subject }) {
     <Card index={7}>
       <CardHead
         icon={<CircleAlert size={18} strokeWidth={SW} />}
+        tone="coral"
         title="Open mistakes"
         aside={
           <Link to={`/mistakes?subject=${subject.id}`} className="muted">
@@ -250,6 +252,7 @@ function PapersCard({ data, subject }: { data: AllData; subject: Subject }) {
     <Card index={8}>
       <CardHead
         icon={<FileText size={18} strokeWidth={SW} />}
+        tone="lagoon"
         title="Papers and tests"
         aside={
           <Link to={`/papers?subject=${subject.id}`} className="muted">
@@ -261,7 +264,9 @@ function PapersCard({ data, subject }: { data: AllData; subject: Subject }) {
         <Empty text="No papers logged yet." action={<Button size="sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject.id } } })}>Log a paper</Button>} />
       ) : (
         <div className="grid-2" style={{ alignItems: 'center' }}>
-          <Line values={papers.map(pct)} min={0} max={100} target={subject.targetPct} height={120} />
+          <div style={{ height: '11rem' }}>
+            <MultiLine series={[{ id: subject.id, colour: subject.colour, values: papers.map(pct) }]} labels={papers.map((p) => fmtDay(p.date))} target={subject.targetPct} focus={subject.id} />
+          </div>
           <div className="list">
             {recent.map((p) => (
               <Link key={p.id} to={`/papers?subject=${subject.id}&open=${p.id}`} className="list-item">

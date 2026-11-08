@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Circle, FileText, ListPlus, Trash2, Zap } from 'lucide-react';
+import { BarChart3, CheckCircle2, Circle, FileText, ListPlus, Trash2, TrendingUp, Zap } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import { deletePaper } from '../db/ops';
 import { addDays, fmtDay, todayKey, weekStartKey } from '../lib/dates';
@@ -8,7 +8,7 @@ import { activeSubjects, pct, subjectPapers } from '../lib/stats';
 import { openUI, settings } from '../lib/state';
 import { Button, Card, CardHead, Chip, Empty, PageSkeleton, Progress } from '../components/ui';
 import { Topbar } from '../components/Topbar';
-import { Line } from '../components/charts/charts';
+import { MultiLine } from '../components/charts/fancy';
 import { ScanGrid, ScanUploadButton } from '../components/Scans';
 import { paperLabel } from '../features/MistakeForms';
 
@@ -45,7 +45,7 @@ function PapersView({ data }: { data: AllData }) {
 
   return (
     <div className="page">
-      <Topbar title="Papers">
+      <Topbar eyebrow="Tests and trends" title="Papers">
         <Link to="/timer?sprint=1" className="btn">
           <Zap size={16} strokeWidth={SW} /> Timed sprint
         </Link>
@@ -56,7 +56,7 @@ function PapersView({ data }: { data: AllData }) {
 
       <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)' }}>
         <Card index={0} className="home-card">
-          <CardHead icon={<Zap size={18} strokeWidth={SW} />} title="Weekly target" aside={`${fmtDay(weekStart)} – ${fmtDay(weekEnd)}`} />
+          <CardHead icon={<Zap size={18} strokeWidth={SW} />} tone="lagoon" title="Weekly target" aside={`${fmtDay(weekStart)} – ${fmtDay(weekEnd)}`} />
           <div className="row" style={{ gap: 12 }}>
             {timedThisWeek.length ? <CheckCircle2 size={32} strokeWidth={1.5} color="var(--green)" /> : <Circle size={32} strokeWidth={1.5} color="var(--text-2)" />}
             <div>
@@ -74,7 +74,7 @@ function PapersView({ data }: { data: AllData }) {
         </Card>
 
         <Card index={1}>
-          <CardHead title="All subjects, latest score" aside="White line marks the target" />
+          <CardHead icon={<BarChart3 size={18} strokeWidth={SW} />} tone="orchid" title="All subjects, latest score" aside="White line marks the target" />
           {subjects.length === 0 ? (
             <Empty text="Add subjects to compare them." action={<Link to="/subjects" className="btn sm">Subjects</Link>} />
           ) : (
@@ -110,9 +110,11 @@ function PapersView({ data }: { data: AllData }) {
           </div>
 
           <Card index={2}>
-            <CardHead title={`${subject.name} trend`} aside={`Target ${subject.targetPct}%`} />
+            <CardHead icon={<TrendingUp size={18} strokeWidth={SW} />} tone="ember" title={`${subject.name} trend`} aside={`Target ${subject.targetPct}%`} />
             {papers.length ? (
-              <Line values={papers.map(pct)} min={0} max={100} target={subject.targetPct} height={160} labels={papers.length <= 14 ? papers.map((p) => fmtDay(p.date)) : undefined} />
+              <div style={{ height: '13rem' }}>
+                <MultiLine series={[{ id: subject.id, colour: subject.colour, values: papers.map(pct) }]} labels={papers.map((p) => fmtDay(p.date))} target={subject.targetPct} focus={subject.id} />
+              </div>
             ) : (
               <Empty text={`No ${subject.name} papers yet.`} action={<Button size="sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject.id } } })}>Log a paper</Button>} />
             )}

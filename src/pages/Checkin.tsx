@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Download, Search } from 'lucide-react';
+import { CheckCircle2, Download, FileText, PenLine, Search, Target } from 'lucide-react';
 import { db, newRow, useData, type AllData } from '../db/db';
 import type { Checkin as CheckinRow, WeekStats } from '../db/types';
 import { addDays, fmtDay, fmtHours, todayKey, weekStartKey } from '../lib/dates';
@@ -39,7 +39,7 @@ function CheckinView({ data, weekStart }: { data: AllData; weekStart: string }) 
 
   return (
     <div className="page">
-      <Topbar title={isCurrent ? 'Weekly check-in' : `Check-in · week of ${fmtDay(weekStart)}`}>
+      <Topbar eyebrow="Weekly review" title={isCurrent ? 'Weekly check-in' : `Check-in · week of ${fmtDay(weekStart)}`}>
         {!isCurrent && (
           <Link to="/checkin" className="btn">
             This week
@@ -59,7 +59,7 @@ function CheckinView({ data, weekStart }: { data: AllData; weekStart: string }) 
 
       <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', alignItems: 'start' }}>
         <Card index={6}>
-          <CardHead title="Reflect" aside="Saves as you type" />
+          <CardHead icon={<PenLine size={18} strokeWidth={1.7} />} tone="orchid" title="Reflect" aside="Saves as you type" />
           <div className="stack">
             <label className="field">
               <span className="field-label">What did I actually do this week?</span>
@@ -121,7 +121,7 @@ function StatsGrid({ data, stats }: { data: AllData; stats: WeekStats }) {
         </Card>
       </div>
       <Card index={4}>
-        <CardHead title="Papers this week" aside={stats.timedPaperDone ? 'Timed paper done' : 'No timed paper'} />
+        <CardHead icon={<FileText size={18} strokeWidth={1.7} />} tone="lagoon" title="Papers this week" aside={stats.timedPaperDone ? 'Timed paper done' : 'No timed paper'} />
         {stats.papers.length === 0 ? (
           <p className="muted small">No papers logged this week.</p>
         ) : (
@@ -147,7 +147,7 @@ function SubjectsProgress({ stats, data }: { stats: WeekStats; data: AllData }) 
   const colour = new Map(data.subjects.map((s) => [s.id, s.colour]));
   return (
     <Card index={7}>
-      <CardHead title="On track?" aside="Average vs target" />
+      <CardHead icon={<Target size={18} strokeWidth={1.7} />} tone="meadow" title="On track?" aside="Average vs target" />
       {stats.subjects.length === 0 ? (
         <p className="muted small">No subjects yet.</p>
       ) : (
@@ -180,7 +180,7 @@ function BackupCard() {
   const days = st.lastBackupAt ? Math.floor((Date.now() - st.lastBackupAt) / 86_400_000) : null;
   return (
     <Card index={8}>
-      <CardHead icon={<Download size={18} strokeWidth={1.5} />} title="Back up your data" />
+      <CardHead icon={<Download size={18} strokeWidth={1.7} />} tone="gold" title="Back up your data" />
       <p className="muted small" style={{ marginBottom: 16 }}>
         {st.lastBackupAt
           ? `Last backup ${days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`} (${new Date(st.lastBackupAt).toLocaleDateString()}).`

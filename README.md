@@ -1,8 +1,8 @@
 # Cadence
 
-A personal, local-first study app that runs one weekly loop: log past papers, track mistakes, redo them, and review the week.
+A personal, local-first study system that runs one weekly loop: flashcards daily, a timed paper every weekend, every mistake redone until it is fixed, and a Sunday check-in.
 
-Everything is stored in your browser (IndexedDB). No accounts, no backend, no cost.
+Everything is stored in your browser (IndexedDB). No accounts, no backend, no cost. It is locked with a password.
 
 ## Run it
 
@@ -13,9 +13,31 @@ npm run dev
 
 Open the URL Vite prints (usually http://localhost:5173). To build a static site: `npm run build`; the `dist/` folder works on any static host.
 
+## Password lock
+
+The first time you open Cadence it walks you through setup and asks you to choose a password. From then on, every visit starts at the lock screen.
+
+- The password is never stored. Cadence keeps a PBKDF2-SHA256 verifier (310,000 iterations, random salt) in IndexedDB, next to your data, so clearing localStorage cannot skip the lock.
+- It locks itself after a chosen idle time (Settings › Security; default 15 minutes), never in the middle of a timed paper. Lock by hand with ⇧⌘L / Ctrl+Shift+L or the lock in the sidebar.
+- After 5 wrong tries it makes you wait 30 seconds, doubling each time.
+- There is no recovery. "Forgot your password?" can only erase everything on this device and start fresh, so keep a JSON backup.
+
+### Site password (for a deployed copy)
+
+Data lives per browser, so a stranger visiting your deployed site never sees *your* data. But without a site password they could run setup in their own browser. To stop that, bake in a site password:
+
+```bash
+node scripts/hash-password.mjs "a long passphrase"
+```
+
+Put the printed `VITE_SITE_KEY=...` line in `.env.local` (or your host's environment variables) and rebuild. A fresh browser must then enter that password before it can even start setup, and it becomes that browser's password.
+
+What this does and does not protect: it is a lock on the app, not encryption. Someone with your unlocked computer and the browser's developer tools could still read IndexedDB directly. Phase 2's backend with real accounts is where server-side protection comes in.
+
 ## Shortcuts
 
-- `Ctrl K` / `Cmd K`: search everything, jump anywhere, run actions ("start timer", "log paper", ...)
+- `Ctrl K` / `Cmd K`: search everything, jump anywhere, run actions ("start timer", "log paper", "lock", ...)
+- `Ctrl Shift L` / `Cmd Shift L`: lock now
 - `N`: add a mistake from any screen (subject defaults to the last one used)
 - Redo session: `Space` reveals the fix, `→` right, `←` wrong
 
@@ -33,6 +55,14 @@ Open the URL Vite prints (usually http://localhost:5173). To build a static site
 
 The app asks the browser for persistent storage. Export a JSON backup from Settings or the Sunday check-in; importing it restores everything, scans included.
 
+## Design
+
+- **Scale:** sizes are in rem and the root size is fluid with the viewport (about 16px on a 16" MacBook Pro, about 19.7px on a 27" 5K display), so the whole composition scales as one piece.
+- **Type:** Geist for the interface, Geist Mono for small labels, Instrument Serif italic for accents.
+- **Colour:** one signature gradient per beat of the loop: orchid (flashcards), lagoon (papers), coral (mistakes), gold (check-in), ember (study), meadow (targets).
+- **Depth:** layered glass cards with a lit hairline edge, a cursor-following sheen and a slight 3D tilt; app-icon style tiles.
+- **Live background:** a WebGL aurora (domain-warped noise) and a raymarched 3D emblem on the lock screen, onboarding and About. Both pause off-screen and when the tab is hidden, honour reduced motion, and fall back to CSS when WebGL is unavailable.
+
 ## Code map
 
 - `src/db`: Dexie schema, types, and delete-with-undo operations
@@ -40,4 +70,6 @@ The app asks the browser for persistent storage. Export a JSON backup from Setti
 - `src/components`: the design system (Card, Stat, Chip, Button, inputs, Sidebar, charts)
 - `src/features`: search/palette, mistake and paper forms, timer controller
 - `src/pages`: one file per screen
+- `src/components/gl`: the WebGL aurora and emblem
+- `src/features/Gate.tsx`: lock screen and onboarding; `src/lib/security.ts`: the password logic
 - `src/styles/tokens.css`: all design tokens

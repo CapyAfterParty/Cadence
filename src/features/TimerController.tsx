@@ -11,7 +11,8 @@ export function useNow(active: boolean) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     if (!active) return;
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, [active]);
   return now;
@@ -19,7 +20,7 @@ export function useNow(active: boolean) {
 
 /** Seconds elapsed (study) or remaining (sprint). */
 export function timerSeconds(t: NonNullable<ReturnType<typeof timer.get>>, now: number) {
-  const elapsed = (now - t.startedAt) / 1000;
+  const elapsed = Math.max(0, now - t.startedAt) / 1000;
   return t.kind === 'sprint' ? (t.durationMin ?? 0) * 60 - elapsed : elapsed;
 }
 

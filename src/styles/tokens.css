@@ -1,61 +1,124 @@
-/* Design tokens. Every screen uses only these. Dark first. */
+/*
+ * Cadence design tokens.
+ * Everything is sized in rem, and the root size is fluid with the viewport:
+ * ~14.7px on a 14" laptop, 16px on a 16" MacBook Pro, ~19.7px on a 27" 5K.
+ * So the whole composition scales as one piece instead of leaving empty space.
+ */
+html {
+  font-size: clamp(14px, calc(8.4px + 0.44vw), 20px);
+}
+
 :root {
   color-scheme: dark;
 
-  --bg: #0a0a0c;
-  --bg-raised: #141417;
-  --glass: rgba(255, 255, 255, 0.06);
-  --glass-strong: rgba(255, 255, 255, 0.1);
-  --glass-hover: rgba(255, 255, 255, 0.09);
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-  --blur: 30px;
+  /* Ink */
+  --bg: #07070b;
+  --bg-2: #0d0d13;
+  --bg-raised: #15151d;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
 
-  --accent: #ff6a2b;
-  --accent-soft: rgba(255, 106, 43, 0.16);
-  --on-accent: #1a0a03;
-  --green: #34c759;
-  --amber: #ff9f0a;
-  --red: #ff453a;
+  /* Glass */
+  --glass-1: rgba(255, 255, 255, 0.075);
+  --glass-2: rgba(255, 255, 255, 0.03);
+  --glass-hover: rgba(255, 255, 255, 0.1);
+  --glass-tint: rgba(16, 16, 24, 0.5);
+  --blur: 2.5rem;
 
-  --text: #ffffff;
-  --text-2: rgba(255, 255, 255, 0.62);
-  --text-3: rgba(255, 255, 255, 0.5);
-  --track: rgba(255, 255, 255, 0.1);
+  /* Text */
+  --text: #f5f5f7;
+  --text-2: rgba(245, 245, 247, 0.64);
+  --text-3: rgba(245, 245, 247, 0.44);
 
-  --r-card: 28px;
-  --r-input: 14px;
+  /* Spectrum: one signature colour per part of the loop */
+  --ember: #ff7a3d;
+  --ember-2: #ff3d6e;
+  --orchid: #b06bff;
+  --orchid-2: #ff6bd5;
+  --lagoon: #3dd9ff;
+  --lagoon-2: #4d7cff;
+  --coral: #ff6b6b;
+  --coral-2: #ffb36b;
+  --meadow: #7cffb2;
+  --meadow-2: #22d39b;
+  --gold: #ffd66b;
+  --gold-2: #ff9f2e;
+
+  --g-ember: linear-gradient(135deg, #ffa25c 0%, #ff7a3d 40%, #ff3d6e 100%);
+  --g-orchid: linear-gradient(135deg, #d29bff 0%, #b06bff 45%, #ff6bd5 100%);
+  --g-lagoon: linear-gradient(135deg, #7cecff 0%, #3dd9ff 40%, #4d7cff 100%);
+  --g-coral: linear-gradient(135deg, #ffc58a 0%, #ff8a6b 45%, #ff4f6d 100%);
+  --g-meadow: linear-gradient(135deg, #c4ffd9 0%, #7cffb2 40%, #22d39b 100%);
+  --g-gold: linear-gradient(135deg, #fff0b3 0%, #ffd66b 45%, #ff9f2e 100%);
+  --g-brand: linear-gradient(120deg, #ff9a4d 0%, #ff4f7b 35%, #b06bff 68%, #4d9bff 100%);
+
+  --accent: #ff7a3d;
+  --accent-soft: rgba(255, 122, 61, 0.16);
+  --focus: #ffb38a;
+
+  /* Status */
+  --green: #34d399;
+  --amber: #ffb547;
+  --red: #ff5a6a;
+
+  /* Shape */
+  --r-xl: 1.75rem;
+  --r-card: 1.5rem;
+  --r-lg: 1.125rem;
+  --r-input: 0.875rem;
+  --r-sm: 0.625rem;
   --r-full: 999px;
 
-  --fs-12: 12px;
-  --fs-13: 13px;
-  --fs-15: 15px;
-  --fs-17: 17px;
-  --fs-22: 22px;
-  --fs-28: 28px;
-  --fs-48: 48px;
+  /* Type */
+  --font: 'Geist Variable', 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --serif: 'Instrument Serif', 'New York', 'Iowan Old Style', Georgia, serif;
+  --mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  --s1: 8px;
-  --s2: 16px;
-  --s3: 24px;
-  --s4: 32px;
-  --s5: 40px;
-  --s6: 48px;
-  --card-pad: 24px;
-  --gap: 16px;
+  --fs-11: 0.6875rem;
+  --fs-12: 0.75rem;
+  --fs-13: 0.8125rem;
+  --fs-14: 0.875rem;
+  --fs-15: 0.9375rem;
+  --fs-17: 1.0625rem;
+  --fs-20: 1.25rem;
+  --fs-24: 1.5rem;
+  --fs-32: 2rem;
+  --fs-44: 2.75rem;
+  --fs-56: 3.5rem;
 
+  /* Space (4px grid at 16px root) */
+  --s1: 0.25rem;
+  --s2: 0.5rem;
+  --s3: 0.75rem;
+  --s4: 1rem;
+  --s5: 1.25rem;
+  --s6: 1.5rem;
+  --s8: 2rem;
+  --s10: 2.5rem;
+  --s12: 3rem;
+  --card-pad: 1.5rem;
+  --gap: 1rem;
+  --sidebar: 5.5rem;
+
+  /* Depth */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.4);
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 12px 24px -8px rgba(0, 0, 0, 0.45), 0 40px 80px -24px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3), 0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 64px 120px -32px rgba(0, 0, 0, 0.8);
+  --hi: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  /* Motion */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --t-fast: 200ms;
-  --t-med: 300ms;
-
-  --font: 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
-  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --t-fast: 180ms;
+  --t-med: 320ms;
+  --t-slow: 600ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
     --t-fast: 0ms;
     --t-med: 0ms;
+    --t-slow: 0ms;
   }
 }

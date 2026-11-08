@@ -25,6 +25,8 @@ export const db = new Dexie('cadence') as Dexie & {
   flashcardLogs: EntityTable<FlashcardLog, 'id'>;
   checkins: EntityTable<Checkin, 'id'>;
   scans: EntityTable<Scan, 'id'>;
+  /** App metadata (e.g. the password verifier). Never exported in backups. */
+  meta: EntityTable<{ key: string; value: unknown }, 'key'>;
 };
 
 db.version(1).stores({
@@ -39,6 +41,8 @@ db.version(1).stores({
   checkins: 'id, &weekStart',
   scans: 'id, [ownerType+ownerId]',
 });
+
+db.version(2).stores({ meta: 'key' });
 
 export const TABLES = [
   'subjects',

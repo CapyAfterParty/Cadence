@@ -112,7 +112,7 @@ function MistakesView({ data }: { data: AllData }) {
 
   return (
     <div className="page">
-      <Topbar title="Mistakes">
+      <Topbar eyebrow="Practice" title="Mistakes">
         <Button onClick={() => openUI({ bulk: { subjectId: subjectId || st.lastSubjectId } })}>
           <ListPlus size={16} strokeWidth={SW} /> Bulk add
         </Button>

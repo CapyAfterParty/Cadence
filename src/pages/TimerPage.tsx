@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Flame, Layers, Play, Square, Trash2, Zap } from 'lucide-react';
+import { Flame, History, Layers, Play, Square, Trash2, Zap } from 'lucide-react';
 import { db, newRow, useData, type AllData } from '../db/db';
 import type { StudySession } from '../db/types';
 import { deleteFlashLog, deleteSession } from '../db/ops';
@@ -26,7 +26,7 @@ function TimerView({ data }: { data: AllData }) {
   const sprintFirst = params.get('sprint') === '1';
   return (
     <div className="page">
-      <Topbar title="Timer" />
+      <Topbar eyebrow="Focus" title="Timer" />
       <div className="grid-2">
         {sprintFirst ? (
           <>
@@ -58,7 +58,7 @@ function StudyCard({ data, index }: { data: AllData; index: number }) {
   const runningSubject = data.subjects.find((s) => s.id === running?.subjectId);
   return (
     <Card index={index} className="home-card">
-      <CardHead icon={<Play size={18} strokeWidth={SW} />} title="Study session" aside="Start, stop, saved" />
+      <CardHead icon={<Play size={18} strokeWidth={SW} />} tone="ember" title="Study session" aside="Start, stop, saved" />
       <div className="big-clock" style={{ textAlign: 'center', padding: '16px 0' }}>
         {fmtClock(running ? timerSeconds(running, now) : 0)}
       </div>
@@ -100,7 +100,7 @@ function SprintCard({ data, index }: { data: AllData; index: number }) {
   const valid = mins > 0 && mins <= 600;
   return (
     <Card index={index} className="home-card">
-      <CardHead icon={<Zap size={18} strokeWidth={SW} />} title="Timed sprint" aside="Exam conditions" />
+      <CardHead icon={<Zap size={18} strokeWidth={SW} />} tone="lagoon" title="Timed sprint" aside="Exam conditions" />
       <p className="muted small">Full screen, timer only, no pause. When it ends, the paper log opens.</p>
       <Field label="Subject">
         <SubjectSelect data={data} value={subjectId} onChange={setSubjectId} />
@@ -152,7 +152,7 @@ function SessionsCard({ data }: { data: AllData }) {
 
   return (
     <Card index={2}>
-      <CardHead title="Sessions" aside={`${fmtHours(monthMinutes(data))} this month · ${studyStreak(data)}-day streak`} />
+      <CardHead icon={<History size={18} strokeWidth={SW} />} tone="gold" title="Sessions" aside={`${fmtHours(monthMinutes(data))} this month · ${studyStreak(data)}-day streak`} />
       <form
         className="form-grid"
         onSubmit={(e) => {
@@ -209,6 +209,7 @@ function FlashcardsCard({ data }: { data: AllData }) {
   return (
     <Card index={3}>
       <CardHead
+        tone="orchid"
         icon={<Layers size={18} strokeWidth={SW} />}
         title="Flashcards"
         aside={

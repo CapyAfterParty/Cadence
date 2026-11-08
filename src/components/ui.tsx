@@ -1,9 +1,22 @@
-import { useEffect, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type ReactNode } from 'react';
+import { Sparkles, X } from 'lucide-react';
 import type { ErrorType, Weakness } from '../db/types';
 import { errorLabel } from '../db/types';
 
 const cx = (...c: (string | false | undefined | null)[]) => c.filter(Boolean).join(' ');
+
+export type Tone = 'ember' | 'orchid' | 'lagoon' | 'coral' | 'meadow' | 'gold';
+
+export const TONE_COLOUR: Record<Tone, string> = {
+  ember: '#ff6a4d',
+  orchid: '#b06bff',
+  lagoon: '#3daeff',
+  coral: '#ff6b7a',
+  meadow: '#34e0a1',
+  gold: '#ffc04d',
+};
+
+const reduceMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- Card ---------- */
 
@@ -13,6 +26,8 @@ export function Card({
   index = 0,
   style,
   hoverable,
+  tilt,
+  tint,
   ...rest
 }: {
   children: ReactNode;
@@ -20,15 +35,31 @@ export function Card({
   index?: number;
   style?: CSSProperties;
   hoverable?: boolean;
+  /** Leans toward the cursor in 3D. */
+  tilt?: boolean;
+  /** A colour that glows in from the corner. */
+  tint?: Tone | string;
 } & React.HTMLAttributes<HTMLElement>) {
+  const tintColour = tint ? TONE_COLOUR[tint as Tone] ?? tint : undefined;
   return (
     <section
-      className={cx('card', hoverable && 'hoverable', className)}
-      style={{ ['--i' as string]: index, ...style }}
+      className={cx('card', hoverable && 'hoverable', tilt && 'tilt', className)}
+      style={{ ['--i' as string]: index, ...(tintColour ? { ['--tint' as string]: tintColour } : {}), ...style }}
       onMouseMove={(e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
-        e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
+        const el = e.currentTarget;
+        const r = el.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        el.style.setProperty('--mx', `${x}px`);
+        el.style.setProperty('--my', `${y}px`);
+        if (tilt && !reduceMotion()) {
+          el.style.setProperty('--ry', `${((x / r.width) - 0.5) * 4}deg`);
+          el.style.setProperty('--rx', `${(0.5 - y / r.height) * 4}deg`);
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.setProperty('--rx', '0deg');
+        e.currentTarget.style.setProperty('--ry', '0deg');
       }}
       {...rest}
     >
@@ -37,21 +68,40 @@ export function Card({
   );
 }
 
-export function CardHead({ icon, title, aside, accent, tone }: { icon?: ReactNode; title: ReactNode; aside?: ReactNode; accent?: boolean; tone?: 'dark' }) {
+export function CardHead({
+  icon,
+  title,
+  aside,
+  accent,
+  tone,
+}: {
+  icon?: ReactNode;
+  title: ReactNode;
+  aside?: ReactNode;
+  accent?: boolean;
+  tone?: Tone | 'dark';
+}) {
+  const t = accent ? 'ember' : tone && tone !== 'dark' ? tone : undefined;
   return (
     <div className="card-head">
-      {icon && <span className={cx('card-icon', accent && 'accent', tone)}>{icon}</span>}
+      {icon && <span className={cx('card-icon', t && `tone-${t}`)}>{icon}</span>}
       <h2>{title}</h2>
       {aside != null && <span className="aside">{aside}</span>}
     </div>
   );
 }
 
+export function IconTile({ tone, children, size }: { tone?: Tone; children: ReactNode; size?: string }) {
+  return (
+    <span className={cx('card-icon', tone && `tone-${tone}`)} style={size ? { width: size, height: size } : undefined}>
+      {children}
+    </span>
+  );
+}
+
 /* ---------- Numbers ---------- */
 
-const reduceMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-/** Counts up to value over ~400ms. */
+/** Counts up with an expo ease, from wherever it was. */
 export function CountUp({ value, decimals = 0 }: { value: number; decimals?: number }) {
   const [shown, setShown] = useState(reduceMotion() ? value : 0);
   const from = useRef(reduceMotion() ? value : 0);
@@ -64,8 +114,8 @@ export function CountUp({ value, decimals = 0 }: { value: number; decimals?: num
     const a = from.current;
     let raf = 0;
     const tick = (t: number) => {
-      const k = Math.min(1, (t - start) / 400);
-      const eased = 1 - Math.pow(1 - k, 3);
+      const k = Math.min(1, (t - start) / 900);
+      const eased = k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
       const v = a + (value - a) * eased;
       setShown(v);
       from.current = v;
@@ -120,11 +170,12 @@ export function Chip({
   dot,
   className,
   children,
+  style,
   ...rest
 }: ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean; dot?: string }) {
   return (
-    <button type="button" className={cx('chip', active && 'active', className)} aria-pressed={active} {...rest}>
-      {dot && <span className="dot" style={{ background: dot }} />}
+    <button type="button" className={cx('chip', active && 'active', className)} aria-pressed={active} style={style} {...rest}>
+      {dot && <span className="dot" style={{ background: dot, color: dot }} />}
       {children}
     </button>
   );
@@ -148,6 +199,7 @@ export function ErrorPill({ value }: { value: ErrorType }) {
   return <span className="pill">{errorLabel(value)}</span>;
 }
 
+/** Segmented control. The white thumb slides to the chosen option. */
 export function Segmented<T extends string>({
   value,
   options,
@@ -159,8 +211,20 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
   label?: string;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const btn = ref.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+      if (btn) setThumb({ left: btn.offsetLeft, width: btn.offsetWidth });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [value, options.length]);
   return (
-    <div className="segmented" role="group" aria-label={label}>
+    <div className="segmented" role="group" aria-label={label} ref={ref}>
+      {thumb && <span className="thumb" style={{ left: thumb.left, width: thumb.width }} />}
       {options.map((o) => (
         <button key={o.value} type="button" aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
           {o.label}
@@ -184,29 +248,30 @@ export function Field({ label, error, children, className }: { label: string; er
 
 /* ---------- States ---------- */
 
-export function Empty({ text, action }: { text: string; action?: ReactNode }) {
+export function Empty({ text, action, icon }: { text: string; action?: ReactNode; icon?: ReactNode }) {
   return (
     <div className="empty">
+      <span className="e-art">{icon ?? <Sparkles size={20} strokeWidth={1.5} />}</span>
       <p>{text}</p>
       {action}
     </div>
   );
 }
 
-export function Skeleton({ height = 160, style }: { height?: number; style?: CSSProperties }) {
+export function Skeleton({ height = 160, style }: { height?: number | string; style?: CSSProperties }) {
   return <div className="skeleton" style={{ height, ...style }} />;
 }
 
 export function PageSkeleton() {
   return (
     <div className="page">
-      <Skeleton height={48} style={{ maxWidth: 320 }} />
+      <Skeleton height="3.5rem" style={{ maxWidth: '20rem' }} />
       <div className="grid-3">
-        <Skeleton />
-        <Skeleton />
-        <Skeleton />
+        <Skeleton height="10rem" />
+        <Skeleton height="10rem" />
+        <Skeleton height="10rem" />
       </div>
-      <Skeleton height={320} />
+      <Skeleton height="20rem" />
     </div>
   );
 }
@@ -253,7 +318,7 @@ export function Modal({
           <div className="modal-head">
             <h2>{title}</h2>
             <Button icon variant="ghost" className="close" aria-label="Close" onClick={onClose}>
-              <X size={18} strokeWidth={1.5} />
+              <X size={18} strokeWidth={1.6} />
             </Button>
           </div>
         )}
