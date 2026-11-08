@@ -1,23 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {
-  ArrowUpRight,
-  BookOpen,
-  CalendarCheck,
-  CalendarClock,
-  Check,
-  CircleAlert,
-  Flame,
-  Layers,
-  Play,
-  Plus,
-  RotateCcw,
-  Target,
-  Timer,
-  TrendingDown,
-  TrendingUp,
-  Zap,
-} from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import type { Subject } from '../db/types';
 import { addDays, daysBetween, fmtDay, fmtHours, greeting, inWeek, isSunday, lastNDays, parseDay, todayKey, weekStartKey, weekdayLetter } from '../lib/dates';
@@ -27,7 +10,6 @@ import {
   dueMistakes,
   flashStreak,
   isCheckinDone,
-  lastAttemptMap,
   loopScore,
   minutesByDay,
   monthMinutes,
@@ -39,22 +21,10 @@ import {
 } from '../lib/stats';
 import { openUI, settings } from '../lib/state';
 import { Heatmap } from '../components/charts/charts';
-import { ArcGauge, LoopRing, MultiLine, Rings, Scene, SmoothArea, StackBars } from '../components/charts/fancy';
-import { Card, CardHead, Chip, CountUp, Empty, IconTile, Skeleton, cx, type Tone } from '../components/ui';
-import { SearchBox } from '../features/Search';
+import { Arc, Bars, LoopRing, MultiLine, Spark } from '../components/charts/fancy';
+import { Card, CardHead, CountUp, Empty, Skeleton, cx } from '../components/ui';
+import { SearchTrigger } from '../features/Search';
 import { RunningPill } from '../features/TimerController';
-import { startStudy } from '../features/timerActions';
-
-const SW = 1.8;
-
-function isoWeek(key: string) {
-  const d = parseDay(key);
-  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const day = t.getUTCDay() || 7;
-  t.setUTCDate(t.getUTCDate() + 4 - day);
-  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
-  return Math.ceil(((t.getTime() - y0.getTime()) / 86400000 + 1) / 7);
-}
 
 export default function Dashboard() {
   const data = useData();
@@ -69,16 +39,15 @@ export default function Dashboard() {
 
 function GridSkeleton() {
   return (
-    <div className="bento">
-      <Skeleton height="31rem" style={{ gridColumn: 'span 5', gridRow: 'span 2' }} />
-      <Skeleton height="15rem" style={{ gridColumn: 'span 4' }} />
-      <Skeleton height="31rem" style={{ gridColumn: 'span 3', gridRow: 'span 2' }} />
-      <Skeleton height="15rem" style={{ gridColumn: 'span 4' }} />
+    <div className="zen-grid">
+      {Array.from({ length: 6 }, (_, i) => (
+        <Skeleton key={i} height="18rem" />
+      ))}
     </div>
   );
 }
 
-/* ---------- Header: date, greeting, a one-line brief, the command bar ---------- */
+/* ---------- Header: the date, a greeting, one line on what matters ---------- */
 
 function brief(data: AllData, redoDays: number) {
   const today = todayKey();
@@ -89,13 +58,13 @@ function brief(data: AllData, redoDays: number) {
     .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1))[0];
   const bits: string[] = [];
   if (!cards) bits.push('flashcards are still to do');
-  if (due) bits.push(`${due} ${due === 1 ? 'mistake is' : 'mistakes are'} waiting for a redo`);
+  if (due) bits.push(`${due} ${due === 1 ? 'mistake waits' : 'mistakes wait'} for a redo`);
   if (soon) {
     const d = daysBetween(today, soon.nextTestDate!);
     bits.push(`${soon.name} is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`}`);
   }
-  if (!bits.length) return 'Everything is on rhythm today. Nice.';
-  const s = bits.length === 1 ? bits[0] : `${bits.slice(0, -1).join(', ')} and ${bits[bits.length - 1]}`;
+  if (!bits.length) return 'Nothing pressing today.';
+  const s = bits.length === 1 ? bits[0] : `${bits.slice(0, -1).join(', ')}, and ${bits[bits.length - 1]}`;
   return s[0].toUpperCase() + s.slice(1) + '.';
 }
 
@@ -106,77 +75,64 @@ function Header({ data, name }: { data?: AllData; name: string }) {
   return (
     <header className="home-head">
       <div className="hh-left">
-        <span className="eyebrow">
-          {parseDay(today).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })} · Week {isoWeek(today)}
-        </span>
+        <span className="eyebrow">{parseDay(today).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
         <h1 className="hh-title">
           {greeting()}
-          {first ? ', ' : '.'}
-          {first && <span className="serif grad-name">{first}.</span>}
+          {first ? (
+            <>
+              , <span className="serif">{first}</span>.
+            </>
+          ) : (
+            '.'
+          )}
         </h1>
         <p className="hh-brief">{data ? brief(data, st.redoDays) : ' '}</p>
       </div>
       <div className="hh-right">
         <RunningPill />
-        <SearchBox variant="hero" />
+        <SearchTrigger />
       </div>
-      {data && <TodayChips data={data} />}
+      {data && <Today data={data} />}
     </header>
   );
 }
 
-function TodayChips({ data }: { data: AllData }) {
+/** What to do now, as a quiet line of actions. */
+function Today({ data }: { data: AllData }) {
   const nav = useNavigate();
   const st = settings.use();
   const today = todayKey();
   const subjects = activeSubjects(data);
   if (!subjects.length)
     return (
-      <div className="today-row">
-        <SmartChip tone="ember" icon={<BookOpen size={14} strokeWidth={SW} />} onClick={() => nav('/subjects')} i={0}>
-          Add your first subject
-        </SmartChip>
-      </div>
+      <nav className="today">
+        <button type="button" onClick={() => nav('/subjects')}>
+          <i /> Add your first subject
+        </button>
+      </nav>
     );
   const cardsToday = cardsByDay(data).get(today) ?? 0;
   const due = dueMistakes(data, st.redoDays, today).length;
-  const weekStart = weekStartKey(today);
-  const timedDone = data.papers.some((p) => p.timed && inWeek(p.date, weekStart));
+  const timedDone = data.papers.some((p) => p.timed && inWeek(p.date, weekStartKey(today)));
   const last = subjects.find((s) => s.id === st.lastSubjectId) ?? subjects[0];
-  let i = 0;
+  const items = [
+    { done: cardsToday > 0, label: cardsToday > 0 ? `${cardsToday} cards today` : 'Flashcards', run: () => openUI({ flashLog: true }) },
+    { done: due === 0, label: due ? `Redo ${due} ${due === 1 ? 'mistake' : 'mistakes'}` : 'Redo queue clear', run: () => nav(`/redo?subject=${last.id}`) },
+    { done: timedDone, label: timedDone ? 'Timed paper done' : 'Timed paper this weekend', run: () => nav(timedDone ? '/papers' : '/timer?sprint=1') },
+  ];
   return (
-    <div className="today-row">
-      <SmartChip tone="orchid" icon={cardsToday ? <Check size={14} strokeWidth={2.4} /> : <Layers size={14} strokeWidth={SW} />} done={cardsToday > 0} onClick={() => openUI({ flashLog: true })} i={i++}>
-        {cardsToday > 0 ? `${cardsToday} cards today` : 'Log flashcards'}
-      </SmartChip>
-      {due > 0 && (
-        <SmartChip tone="coral" icon={<RotateCcw size={14} strokeWidth={SW} />} onClick={() => nav(`/redo?subject=${last.id}`)} i={i++}>
-          Redo {due} {due === 1 ? 'mistake' : 'mistakes'}
-        </SmartChip>
-      )}
-      <SmartChip tone="lagoon" icon={timedDone ? <Check size={14} strokeWidth={2.4} /> : <Zap size={14} strokeWidth={SW} />} done={timedDone} onClick={() => nav(timedDone ? '/papers' : '/timer?sprint=1')} i={i++}>
-        {timedDone ? 'Timed paper done' : 'Timed paper this weekend'}
-      </SmartChip>
-      <SmartChip tone="ember" icon={<Play size={13} strokeWidth={2.2} fill="currentColor" />} onClick={() => startStudy(last.id)} i={i++}>
-        Study {last.name}
-      </SmartChip>
-      <SmartChip tone="gold" icon={<Plus size={14} strokeWidth={2.2} />} onClick={() => openUI({ logPaper: { preset: { subjectId: last.id } } })} i={i++}>
-        Log a paper
-      </SmartChip>
-    </div>
+    <nav className="today" aria-label="Today">
+      {items.map((it) => (
+        <button key={it.label} type="button" className={it.done ? 'done' : undefined} onClick={it.run}>
+          {it.done ? <Check size={13} strokeWidth={2} /> : <i />}
+          {it.label}
+        </button>
+      ))}
+    </nav>
   );
 }
 
-function SmartChip({ tone, icon, children, onClick, done, i }: { tone: Tone; icon: React.ReactNode; children: React.ReactNode; onClick: () => void; done?: boolean; i: number }) {
-  return (
-    <button type="button" className={cx('smart-chip', done && 'done')} onClick={onClick} style={{ ['--i' as string]: i }}>
-      <span className={`sc-icon tone-${tone}`}>{icon}</span>
-      {children}
-    </button>
-  );
-}
-
-/* ---------- Bento ---------- */
+/* ---------- Body ---------- */
 
 function Body({ data }: { data: AllData }) {
   const st = settings.use();
@@ -184,142 +140,96 @@ function Body({ data }: { data: AllData }) {
   const [chosenId, setChosenId] = useState(st.lastSubjectId ?? '');
   const subject = subjects.find((s) => s.id === chosenId) ?? subjects[0];
   const today = todayKey();
-  const weekStart = weekStartKey(today);
-  const checkinDone = isCheckinDone(data.checkins.find((c) => c.weekStart === weekStart));
+  const checkinDone = isCheckinDone(data.checkins.find((c) => c.weekStart === weekStartKey(today)));
 
   return (
     <>
       {isSunday(today) && !checkinDone && (
         <div className="banner">
-          <IconTile tone="gold">
-            <CalendarCheck size={18} strokeWidth={SW} />
-          </IconTile>
           <span>
-            <strong>It’s Sunday.</strong> <span className="muted">Your weekly check-in is ready, with this week’s stats already filled in.</span>
+            <strong>It’s Sunday.</strong> Your weekly check-in is ready, with the week already filled in.
           </span>
-          <Link to="/checkin" className="btn primary sm">
-            Open check-in <ArrowUpRight size={14} strokeWidth={2} />
+          <Link to="/checkin" className="btn sm">
+            Open check-in <ArrowRight size={13} strokeWidth={1.8} />
           </Link>
         </div>
       )}
-      <div className="bento">
+      <div className="zen-grid">
         <LoopCard data={data} redoDays={st.redoDays} />
         <StudyCard data={data} />
-        <TargetCard data={data} subject={subject} onPick={setChosenId} />
         <FlashCard data={data} />
         <MistakesCard data={data} redoDays={st.redoDays} />
         <PapersCard data={data} subject={subject} onPick={setChosenId} />
-        <GoalsCard data={data} />
-        <HeatmapCard data={data} />
-        <UpNextCard data={data} />
+        <TargetCard data={data} subject={subject} onPick={setChosenId} />
+        <CalendarCard data={data} />
+        <AheadCard data={data} />
       </div>
     </>
   );
 }
 
-const loopWord = (s: number) => (s >= 100 ? 'complete' : s >= 75 ? 'nearly there' : s >= 50 ? 'halfway there' : s >= 25 ? 'building' : 'just starting');
+function Big({ children, unit }: { children: React.ReactNode; unit?: string }) {
+  return (
+    <div className="big">
+      {children}
+      {unit && <span className="u">{unit}</span>}
+    </div>
+  );
+}
 
 function LoopCard({ data, redoDays }: { data: AllData; redoDays: number }) {
   const weekStart = weekStartKey();
   const today = todayKey();
   const current = loopScore(data, weekStart, redoDays);
-  const weeks = recentWeeks(8);
-  const history = weeks.map((w) => loopScore(data, w, redoDays).score);
-  const prev = history[history.length - 2] ?? 0;
-  const delta = current.score - prev;
   const [flash, paper, redo, check] = current.parts;
-  const daysIn = Math.min(7, daysBetween(weekStart, today) + 1);
-  const legend: { tone: Tone; icon: React.ReactNode; label: string; status: string; v: number }[] = [
-    { tone: 'orchid', icon: <Layers size={15} strokeWidth={SW} />, label: 'Flashcards', status: `${Math.round(flash.value * 7)} of 7 days`, v: flash.value },
-    { tone: 'lagoon', icon: <Zap size={15} strokeWidth={SW} />, label: 'Timed paper', status: paper.value >= 1 ? 'Done' : 'Not yet', v: paper.value },
-    { tone: 'coral', icon: <RotateCcw size={15} strokeWidth={SW} />, label: 'Mistakes redone', status: `${Math.round(redo.value * 100)}%`, v: redo.value },
-    { tone: 'gold', icon: <CalendarCheck size={15} strokeWidth={SW} />, label: 'Check-in', status: check.value >= 1 ? 'Done' : isSunday(today) ? 'Today' : 'Sunday', v: check.value },
+  const rows = [
+    { label: 'Flashcards', value: flash.value, status: `${Math.round(flash.value * 7)}/7 days` },
+    { label: 'Timed paper', value: paper.value, status: paper.value >= 1 ? 'Done' : 'Not yet' },
+    { label: 'Mistakes redone', value: redo.value, status: `${Math.round(redo.value * 100)}%` },
+    { label: 'Check-in', value: check.value, status: check.value >= 1 ? 'Done' : isSunday(today) ? 'Today' : 'Sunday' },
   ];
   return (
-    <Card className="b-loop" index={0} tint="orchid" tilt>
-      <CardHead icon={<Target size={18} strokeWidth={SW} />} tone="ember" title="Weekly loop" aside={`Day ${daysIn} of 7`} />
-      <div className="loop-body">
-        <div className="loop-ring-wrap">
-          <LoopRing
-            parts={[
-              { value: flash.value, from: '#e0b0ff', to: '#b06bff', label: 'Flashcards' },
-              { value: paper.value, from: '#7cecff', to: '#4d7cff', label: 'Timed paper' },
-              { value: redo.value, from: '#ffc58a', to: '#ff4f6d', label: 'Mistakes' },
-              { value: check.value, from: '#fff0b3', to: '#ff9f2e', label: 'Check-in' },
-            ]}
-          >
-            <span className="loop-score num">
-              <CountUp value={current.score} />
-            </span>
-            <span className="loop-word serif">{loopWord(current.score)}</span>
-            <span className={cx('delta', delta >= 0 ? 'up' : 'down')}>
-              {delta >= 0 ? <TrendingUp size={12} strokeWidth={2.2} /> : <TrendingDown size={12} strokeWidth={2.2} />}
-              {delta >= 0 ? '+' : ''}
-              {delta} vs last week
-            </span>
-          </LoopRing>
-        </div>
-        <ul className="loop-legend">
-          {legend.map((l, i) => (
-            <li key={l.label} style={{ ['--i' as string]: i }}>
-              <span className={`lg-icon tone-${l.tone}`}>{l.icon}</span>
-              <span className="lg-text">
-                <strong>{l.label}</strong>
-                <span>{l.status}</span>
-              </span>
-              <span className={cx('lg-check', l.v >= 1 && 'on')}>{l.v >= 1 ? <Check size={12} strokeWidth={3} /> : <span className="num">{Math.round(l.v * 100)}</span>}</span>
-            </li>
-          ))}
-        </ul>
+    <Card className="z-card loop" index={0}>
+      <CardHead title="This week" aside={`Day ${Math.min(7, daysBetween(weekStart, today) + 1)} of 7`} />
+      <div className="loop-wrap">
+        <LoopRing parts={current.parts}>
+          <span className="loop-score num">
+            <CountUp value={current.score} />
+          </span>
+          <span className="loop-caption">of the loop</span>
+        </LoopRing>
       </div>
-      <div className="loop-weeks">
-        <span className="eyebrow">Last 8 weeks</span>
-        <div className="lw-bars">
-          {history.map((v, i) => (
-            <span key={i} className={i === history.length - 1 ? 'lw on' : 'lw'} style={{ height: `${Math.max(6, v)}%`, animationDelay: `${400 + i * 50}ms` }} title={`Week of ${fmtDay(weeks[i])}: ${v}`} />
-          ))}
-        </div>
-      </div>
+      <ul className="quiet-list">
+        {rows.map((r) => (
+          <li key={r.label}>
+            <span className={cx('q-mark', r.value >= 1 && 'on')}>{r.value >= 1 && <Check size={10} strokeWidth={2.4} />}</span>
+            <span className="q-label">{r.label}</span>
+            <span className="q-value num">{r.status}</span>
+          </li>
+        ))}
+      </ul>
     </Card>
-  );
-}
-
-function Duration({ minutes }: { minutes: number }) {
-  const h = Math.floor(minutes / 60);
-  const m = Math.round(minutes % 60);
-  return (
-    <span className="big-num">
-      <CountUp value={h} />
-      <span className="u">h</span> <CountUp value={m} />
-      <span className="u">m</span>
-    </span>
   );
 }
 
 function StudyCard({ data }: { data: AllData }) {
   const days = lastNDays(7);
+  const mins = minutesByDay(data);
   const weekStart = weekStartKey();
-  const subjects = activeSubjects(data);
-  const series = subjects.map((s) => ({
-    name: s.name,
-    colour: s.colour,
-    values: days.map((d) => data.sessions.filter((x) => x.subjectId === s.id && x.date === d).reduce((a, x) => a + x.minutes, 0)),
-  }));
   const week = data.sessions.filter((s) => s.date >= weekStart).reduce((a, s) => a + s.minutes, 0);
-  const lastWeek = data.sessions.filter((s) => inWeek(s.date, addDays(weekStart, -7)) && s.date <= addDays(todayKey(), -7)).reduce((a, s) => a + s.minutes, 0);
-  const delta = week - lastWeek;
+  const h = Math.floor(week / 60);
+  const m = Math.round(week % 60);
   return (
-    <Card className="b-study" index={1} tint="ember" tilt>
-      <CardHead icon={<Timer size={18} strokeWidth={SW} />} tone="ember" title={<Link to="/timer">Study time</Link>} aside="Last 7 days" />
-      <div className="kpi-row">
-        <Duration minutes={week} />
-        <span className={cx('delta', delta >= 0 ? 'up' : 'down')}>
-          {delta >= 0 ? <TrendingUp size={12} strokeWidth={2.2} /> : <TrendingDown size={12} strokeWidth={2.2} />}
-          {fmtHours(Math.abs(delta))} vs last week
-        </span>
-      </div>
-      <div className="chart-fill">
-        <StackBars labels={days.map(weekdayLetter)} series={series} format={fmtHours} />
+    <Card className="z-card" index={1}>
+      <CardHead title={<Link to="/timer">Study</Link>} aside="This week" />
+      <Big>
+        <CountUp value={h} />
+        <span className="u">h</span> <CountUp value={m} />
+        <span className="u">m</span>
+      </Big>
+      <p className="caption">{studyStreak(data)}-day streak</p>
+      <div className="chart">
+        <Bars values={days.map((d) => mins.get(d) ?? 0)} labels={days.map(weekdayLetter)} format={fmtHours} />
       </div>
     </Card>
   );
@@ -329,30 +239,22 @@ function FlashCard({ data }: { data: AllData }) {
   const cards = cardsByDay(data);
   const days = lastNDays(7);
   const today = cards.get(todayKey()) ?? 0;
-  const streak = flashStreak(data);
   return (
-    <Card className="b-flash" index={3} tint="orchid" tilt>
+    <Card className="z-card" index={2}>
       <CardHead
-        icon={<Layers size={18} strokeWidth={SW} />}
-        tone="orchid"
         title="Flashcards"
         aside={
-          <span className="streak">
-            <Flame size={12} strokeWidth={2.2} /> {streak} days
-          </span>
+          <button type="button" className="text-btn" onClick={() => openUI({ flashLog: true })}>
+            Log
+          </button>
         }
       />
-      <div className="kpi-row">
-        <span className="big-num">
-          <CountUp value={today} />
-          <span className="u">today</span>
-        </span>
-        <button type="button" className={cx('orb-btn', !today && 'hot')} onClick={() => openUI({ flashLog: true })} aria-label="Log flashcards">
-          <Plus size={18} strokeWidth={2.2} />
-        </button>
-      </div>
-      <div className="chart-fill">
-        <SmoothArea values={days.map((d) => cards.get(d) ?? 0)} compare={days.map((d) => cards.get(addDays(d, -7)) ?? 0)} labels={days.map(weekdayLetter)} />
+      <Big unit="today">
+        <CountUp value={today} />
+      </Big>
+      <p className="caption">{flashStreak(data)}-day streak · dashed line is last week</p>
+      <div className="chart">
+        <Spark values={days.map((d) => cards.get(d) ?? 0)} compare={days.map((d) => cards.get(addDays(d, -7)) ?? 0)} labels={days.map(weekdayLetter)} />
       </div>
     </Card>
   );
@@ -365,49 +267,50 @@ function MistakesCard({ data, redoDays }: { data: AllData; redoDays: number }) {
   const redone = new Set(data.attempts.filter((a) => days.includes(a.date)).map((a) => a.mistakeId)).size;
   const cleared = new Set(data.attempts.filter((a) => a.correct && days.includes(a.date)).map((a) => a.mistakeId)).size;
   const logged = data.mistakes.filter((m) => days.includes(m.date)).length;
-  const open = data.mistakes.filter((m) => !m.cleared);
-  const carded = data.mistakes.length ? data.mistakes.filter((m) => m.cardMade).length / data.mistakes.length : 0;
-  const rings = [
-    { value: redone / Math.max(1, redone + due), from: '#ffc58a', to: '#ff4f6d', label: 'Redone', text: `${redone} of ${redone + due}` },
-    { value: logged ? cleared / logged : cleared ? 1 : 0, from: '#fff0b3', to: '#ff9f2e', label: 'Cleared', text: `${cleared} vs ${logged} logged` },
-    { value: carded, from: '#e0b0ff', to: '#b06bff', label: 'Cards made', text: `${Math.round(carded * 100)}%` },
-  ];
-  const last = lastAttemptMap(data.attempts);
-  void last;
+  const open = data.mistakes.filter((m) => !m.cleared).length;
   return (
-    <Card className="b-mistakes" index={4} tint="coral" tilt>
-      <CardHead icon={<CircleAlert size={18} strokeWidth={SW} />} tone="coral" title={<Link to="/mistakes">Mistakes</Link>} aside={`${open.length} open`} />
-      <div className="mk-body">
-        <div className="mk-rings">
-          <Rings rings={rings} />
-        </div>
-        <div className="mk-side">
-          <span className="big-num">
-            <CountUp value={due} />
-            <span className="u">due</span>
-          </span>
-          <ul className="mk-legend">
-            {rings.map((r) => (
-              <li key={r.label}>
-                <i style={{ background: `linear-gradient(135deg, ${r.from}, ${r.to})` }} />
-                <span>{r.label}</span>
-                <b className="num">{r.text}</b>
-              </li>
-            ))}
-          </ul>
-          <button type="button" className="btn sm" disabled={!due} onClick={() => nav(`/redo?subject=${settings.get().lastSubjectId ?? ''}`)}>
-            <RotateCcw size={13} strokeWidth={2} /> Start redo
-          </button>
-        </div>
-      </div>
+    <Card className="z-card" index={3}>
+      <CardHead title={<Link to="/mistakes">Mistakes</Link>} aside={`${open} open`} />
+      <Big unit="due">
+        <CountUp value={due} />
+      </Big>
+      <p className="caption">Not redone in {redoDays} days</p>
+      <ul className="quiet-list push">
+        <li>
+          <span className="q-label">Redone, 7 days</span>
+          <span className="q-value num">{redone}</span>
+        </li>
+        <li>
+          <span className="q-label">Cleared, 7 days</span>
+          <span className="q-value num">{cleared}</span>
+        </li>
+        <li>
+          <span className="q-label">Logged, 7 days</span>
+          <span className="q-value num">{logged}</span>
+        </li>
+      </ul>
+      <button type="button" className="text-btn go" disabled={!due} onClick={() => nav(`/redo?subject=${settings.get().lastSubjectId ?? ''}`)}>
+        Start a redo <ArrowRight size={13} strokeWidth={1.8} />
+      </button>
     </Card>
   );
 }
 
+function SubjectTabs({ data, value, onPick }: { data: AllData; value?: string; onPick: (id: string) => void }) {
+  return (
+    <div className="tabs">
+      {activeSubjects(data).map((s) => (
+        <button key={s.id} type="button" className={s.id === value ? 'on' : undefined} onClick={() => onPick(s.id)}>
+          {s.name}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PapersCard({ data, subject, onPick }: { data: AllData; subject?: Subject; onPick: (id: string) => void }) {
-  const subjects = activeSubjects(data);
   const weeks = recentWeeks(10);
-  const series = subjects.map((s) => ({
+  const series = activeSubjects(data).map((s) => ({
     id: s.id,
     colour: s.colour,
     values: weeks.map((w) => {
@@ -417,35 +320,21 @@ function PapersCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   }));
   const avg = subject ? subjectAverage(data, subject.id) : null;
   const papers = subject ? subjectPapers(data, subject.id) : [];
-  const best = papers.length ? Math.max(...papers.map(pct)) : null;
-  const any = data.papers.length > 0;
   return (
-    <Card className="b-papers" index={5} tint="lagoon" tilt>
-      <CardHead icon={<BookOpen size={18} strokeWidth={SW} />} tone="lagoon" title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Paper scores</Link>} aside="Weekly average · 10 weeks" />
-      {!any ? (
-        <Empty text="Log a paper to see your trend." action={<button type="button" className="btn sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject?.id } } })}>Log a paper</button>} />
+    <Card className="z-card" index={4}>
+      <CardHead title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Papers</Link>} aside="10 weeks" />
+      {!data.papers.length ? (
+        <Empty text="Log a paper to see the trend." action={<button type="button" className="btn sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject?.id } } })}>Log a paper</button>} />
       ) : (
         <>
-          <div className="kpi-row">
-            <span className="big-num">
-              {avg == null ? '–' : <CountUp value={Math.round(avg)} />}
-              <span className="u">%</span>
-            </span>
-            <span className="kpi-meta">
-              <span>{subject?.name} · last 3 papers</span>
-              <span className="muted">Best {best == null ? '–' : `${Math.round(best)}%`} · target {subject?.targetPct}%</span>
-            </span>
-          </div>
-          <div className="chart-fill">
+          <Big unit="%">{avg == null ? '–' : <CountUp value={Math.round(avg)} />}</Big>
+          <p className="caption">
+            {subject?.name}, last three · {papers.length} logged
+          </p>
+          <div className="chart">
             <MultiLine series={series} labels={weeks.map((w) => fmtDay(w, { day: 'numeric', month: 'short' }))} target={subject?.targetPct} focus={subject?.id} />
           </div>
-          <div className="chip-row tight">
-            {subjects.map((s) => (
-              <Chip key={s.id} dot={s.colour} active={s.id === subject?.id} onClick={() => onPick(s.id)}>
-                {s.name}
-              </Chip>
-            ))}
-          </div>
+          <SubjectTabs data={data} value={subject?.id} onPick={onPick} />
         </>
       )}
     </Card>
@@ -457,77 +346,33 @@ function TargetCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const avg = subject ? subjectAverage(data, subject.id) : null;
   const days = subject?.nextTestDate ? daysBetween(today, subject.nextTestDate) : null;
   return (
-    <Card className="b-target target-card" index={2}>
-      <Scene />
-      <div className="tc-content">
-        <div className="tc-orbs">
-          {activeSubjects(data).map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              className={s.id === subject?.id ? 'orb active' : 'orb'}
-              style={{ ['--c' as string]: s.colour }}
-              title={s.name}
-              aria-label={s.name}
-              aria-pressed={s.id === subject?.id}
-              onClick={() => onPick(s.id)}
-            >
-              {s.name.slice(0, 2)}
-            </button>
-          ))}
-        </div>
-        {subject ? (
-          <>
-            <span className="eyebrow tc-label">{subject.name} · average vs target</span>
-            <div className="tc-gauge">
-              <ArcGauge value={avg} target={subject.targetPct} label={`${subject.targetPct}%`} />
-              <div className="tc-num num">{avg == null ? '–' : <><CountUp value={Math.round(avg)} />%</>}</div>
-            </div>
-            <div className="tc-verdict">
-              {avg == null ? 'No scores yet' : avg >= subject.targetPct ? <>On track <span className="serif">for the target</span></> : <>{Math.round(subject.targetPct - avg)} points <span className="serif">to go</span></>}
-            </div>
-            <div className="tc-pill">
-              <CalendarClock size={14} strokeWidth={SW} />
-              {days == null ? 'No test date set' : days < 0 ? 'Test date has passed' : days === 0 ? 'Test is today' : `${days} ${days === 1 ? 'day' : 'days'} until the test`}
-            </div>
-          </>
-        ) : (
-          <Empty text="Add a subject to set a target." action={<Link className="btn sm" to="/subjects">Add subject</Link>} />
-        )}
-      </div>
-    </Card>
-  );
-}
-
-function GoalsCard({ data }: { data: AllData }) {
-  const weekStart = weekStartKey();
-  const prev = data.checkins.filter((c) => c.weekStart < weekStart).sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1))[0];
-  const goals = prev?.goals.filter((g) => g.trim()) ?? [];
-  return (
-    <Card className="b-goals" index={6} tint="gold" tilt>
-      <CardHead icon={<Target size={18} strokeWidth={SW} />} tone="gold" title="This week’s goals" />
-      {goals.length ? (
-        <ol className="goals">
-          {goals.map((g, i) => (
-            <li key={i} style={{ ['--i' as string]: i }}>
-              <span className="g-num serif">{i + 1}</span>
-              <span>{g}</span>
-            </li>
-          ))}
-        </ol>
+    <Card className="z-card" index={5}>
+      <CardHead title="Target" aside={subject?.name} />
+      {subject ? (
+        <>
+          <div className="arc-wrap">
+            <Arc value={avg} target={subject.targetPct} />
+            <div className="arc-num num">{avg == null ? '–' : <CountUp value={Math.round(avg)} />}</div>
+          </div>
+          <p className="caption center">
+            {avg == null ? 'No scores yet' : avg >= subject.targetPct ? `At or above the ${subject.targetPct}% target` : `${Math.round(subject.targetPct - avg)} points below ${subject.targetPct}%`}
+          </p>
+          <p className="caption center faint">
+            {days == null ? 'No test date set' : days < 0 ? 'Test date has passed' : days === 0 ? 'Test is today' : `Test in ${days} ${days === 1 ? 'day' : 'days'}`}
+          </p>
+          <SubjectTabs data={data} value={subject.id} onPick={onPick} />
+        </>
       ) : (
-        <Empty text="Set three goals in your Sunday check-in." action={<Link className="btn sm" to="/checkin">Open check-in</Link>} />
+        <Empty text="Add a subject to set a target." action={<Link className="btn sm" to="/subjects">Add subject</Link>} />
       )}
     </Card>
   );
 }
 
-function HeatmapCard({ data }: { data: AllData }) {
+function CalendarCard({ data }: { data: AllData }) {
   const mins = minutesByDay(data);
   const start = addDays(weekStartKey(), -7 * 38);
   const days = Array.from({ length: 39 * 7 }, (_, i) => addDays(start, i));
-  const month = monthMinutes(data);
-  const bestDay = Math.max(0, ...days.map((d) => mins.get(d) ?? 0));
   const months: { label: string; col: number }[] = [];
   days.forEach((d, i) => {
     if (i % 7 === 0) {
@@ -536,35 +381,8 @@ function HeatmapCard({ data }: { data: AllData }) {
     }
   });
   return (
-    <Card className="b-heat" index={7} tint="meadow">
-      <CardHead icon={<CalendarCheck size={18} strokeWidth={SW} />} tone="meadow" title="Study calendar" aside="Nine months" />
-      <div className="heat-stats">
-        <div>
-          <span className="big-num sm">
-            <CountUp value={studyStreak(data)} />
-            <span className="u">days</span>
-          </span>
-          <span className="eyebrow">Streak</span>
-        </div>
-        <div>
-          <span className="big-num sm">
-            <CountUp value={Math.round((month / 60) * 10) / 10} decimals={1} />
-            <span className="u">h</span>
-          </span>
-          <span className="eyebrow">This month</span>
-        </div>
-        <div>
-          <span className="big-num sm">{fmtHours(bestDay)}</span>
-          <span className="eyebrow">Best day</span>
-        </div>
-        <div className="heat-legend">
-          <span className="eyebrow">Less</span>
-          {[0, 1, 2, 3, 4].map((l) => (
-            <span key={l} className={`heat l${l}`} />
-          ))}
-          <span className="eyebrow">More</span>
-        </div>
-      </div>
+    <Card className="z-card wide" index={6}>
+      <CardHead title="Study calendar" aside={`${fmtHours(monthMinutes(data))} this month`} />
       <div className="heat-months" style={{ gridTemplateColumns: `repeat(39, minmax(0, 1fr))` }}>
         {months.map((m) => (
           <span key={m.label + m.col} style={{ gridColumn: `${m.col + 1} / span 3` }}>
@@ -577,38 +395,46 @@ function HeatmapCard({ data }: { data: AllData }) {
   );
 }
 
-function UpNextCard({ data }: { data: AllData }) {
+function AheadCard({ data }: { data: AllData }) {
   const today = todayKey();
   const tests = activeSubjects(data)
     .filter((s) => s.nextTestDate && s.nextTestDate >= today)
     .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1));
+  const prev = data.checkins.filter((c) => c.weekStart < weekStartKey()).sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1))[0];
+  const goals = prev?.goals.filter((g) => g.trim()) ?? [];
   return (
-    <Card className="b-next" index={8} tint="lagoon">
-      <CardHead icon={<CalendarClock size={18} strokeWidth={SW} />} tone="lagoon" title="Coming up" />
-      {tests.length === 0 ? (
-        <Empty text="No test dates yet. Add them on each subject." action={<Link className="btn sm" to="/subjects">Subjects</Link>} />
-      ) : (
-        <ol className="timeline">
-          {tests.map((s, i) => {
+    <Card className="z-card" index={7}>
+      <CardHead title="Ahead" />
+      {tests.length === 0 && goals.length === 0 && <Empty text="Test dates and weekly goals appear here." />}
+      {tests.length > 0 && (
+        <ul className="quiet-list">
+          {tests.map((s) => {
             const d = daysBetween(today, s.nextTestDate!);
-            const avg = subjectAverage(data, s.id);
             return (
-              <li key={s.id} style={{ ['--c' as string]: s.colour, ['--i' as string]: i }}>
-                <Link to={`/subjects/${s.id}`}>
-                  <span className="tl-dot" />
-                  <span className="tl-main">
-                    <strong>{s.name}</strong>
-                    <span className="muted small">
-                      {fmtDay(s.nextTestDate!, { weekday: 'short', day: 'numeric', month: 'short' })} · avg {avg == null ? '–' : `${Math.round(avg)}%`}
-                    </span>
-                  </span>
-                  <span className={cx('tl-count', d <= 3 ? 'hot' : d <= 7 ? 'warm' : '')}>{d === 0 ? 'Today' : `${d}d`}</span>
+              <li key={s.id}>
+                <Link to={`/subjects/${s.id}`} className="q-label">
+                  {s.name} test
                 </Link>
+                <span className={cx('q-value num', d <= 7 && 'soon')}>{d === 0 ? 'today' : `${d} days`}</span>
               </li>
             );
           })}
-        </ol>
+        </ul>
+      )}
+      {goals.length > 0 && (
+        <>
+          <span className="eyebrow goals-title">This week’s goals</span>
+          <ol className="goals">
+            {goals.map((g, i) => (
+              <li key={i}>
+                <span className="g-num serif">{i + 1}</span>
+                <span>{g}</span>
+              </li>
+            ))}
+          </ol>
+        </>
       )}
     </Card>
   );
 }
+

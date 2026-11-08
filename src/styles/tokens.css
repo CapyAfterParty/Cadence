@@ -1,8 +1,8 @@
 /*
- * Cadence design tokens.
- * Everything is sized in rem, and the root size is fluid with the viewport:
- * ~14.7px on a 14" laptop, 16px on a 16" MacBook Pro, ~19.7px on a 27" 5K.
- * So the whole composition scales as one piece instead of leaving empty space.
+ * Cadence design tokens: a calm, minimal system.
+ * One warm neutral scale, one muted accent, generous space.
+ * Sizes are in rem and the root is fluid with the viewport:
+ * ~16px on a 16" MacBook Pro, ~19.7px on a 27" 5K display.
  */
 html {
   font-size: clamp(14px, calc(8.4px + 0.44vw), 20px);
@@ -11,62 +11,35 @@ html {
 :root {
   color-scheme: dark;
 
-  /* Ink */
-  --bg: #07070b;
-  --bg-2: #0d0d13;
-  --bg-raised: #15151d;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
-
-  /* Glass */
-  --glass-1: rgba(255, 255, 255, 0.075);
-  --glass-2: rgba(255, 255, 255, 0.03);
-  --glass-hover: rgba(255, 255, 255, 0.1);
-  --glass-tint: rgba(16, 16, 24, 0.5);
-  --blur: 2.5rem;
+  /* Warm ink */
+  --bg: #0d0d0c;
+  --surface: #141413;
+  --surface-2: #1b1b19;
+  --surface-3: #232320;
+  --line: rgba(240, 236, 228, 0.07);
+  --line-strong: rgba(240, 236, 228, 0.13);
 
   /* Text */
-  --text: #f5f5f7;
-  --text-2: rgba(245, 245, 247, 0.64);
-  --text-3: rgba(245, 245, 247, 0.44);
+  --text: #ece9e2;
+  --text-2: rgba(236, 233, 226, 0.58);
+  --text-3: rgba(236, 233, 226, 0.36);
 
-  /* Spectrum: one signature colour per part of the loop */
-  --ember: #ff7a3d;
-  --ember-2: #ff3d6e;
-  --orchid: #b06bff;
-  --orchid-2: #ff6bd5;
-  --lagoon: #3dd9ff;
-  --lagoon-2: #4d7cff;
-  --coral: #ff6b6b;
-  --coral-2: #ffb36b;
-  --meadow: #7cffb2;
-  --meadow-2: #22d39b;
-  --gold: #ffd66b;
-  --gold-2: #ff9f2e;
+  /* The one accent: muted clay. Used for "now", "today" and primary actions. */
+  --accent: #d9926a;
+  --accent-soft: rgba(217, 146, 106, 0.12);
+  --accent-ink: #1a110c;
+  --focus: rgba(217, 146, 106, 0.55);
 
-  --g-ember: linear-gradient(135deg, #ffa25c 0%, #ff7a3d 40%, #ff3d6e 100%);
-  --g-orchid: linear-gradient(135deg, #d29bff 0%, #b06bff 45%, #ff6bd5 100%);
-  --g-lagoon: linear-gradient(135deg, #7cecff 0%, #3dd9ff 40%, #4d7cff 100%);
-  --g-coral: linear-gradient(135deg, #ffc58a 0%, #ff8a6b 45%, #ff4f6d 100%);
-  --g-meadow: linear-gradient(135deg, #c4ffd9 0%, #7cffb2 40%, #22d39b 100%);
-  --g-gold: linear-gradient(135deg, #fff0b3 0%, #ffd66b 45%, #ff9f2e 100%);
-  --g-brand: linear-gradient(120deg, #ff9a4d 0%, #ff4f7b 35%, #b06bff 68%, #4d9bff 100%);
-
-  --accent: #ff7a3d;
-  --accent-soft: rgba(255, 122, 61, 0.16);
-  --focus: #ffb38a;
-
-  /* Status */
-  --green: #34d399;
-  --amber: #ffb547;
-  --red: #ff5a6a;
+  /* Quiet status colours */
+  --green: #8fb996;
+  --amber: #d6b37a;
+  --red: #d38a84;
 
   /* Shape */
-  --r-xl: 1.75rem;
-  --r-card: 1.5rem;
-  --r-lg: 1.125rem;
-  --r-input: 0.875rem;
-  --r-sm: 0.625rem;
+  --r-xl: 1.5rem;
+  --r-card: 1.25rem;
+  --r-lg: 1rem;
+  --r-input: 0.75rem;
   --r-full: 999px;
 
   /* Type */
@@ -86,7 +59,7 @@ html {
   --fs-44: 2.75rem;
   --fs-56: 3.5rem;
 
-  /* Space (4px grid at 16px root) */
+  /* Space */
   --s1: 0.25rem;
   --s2: 0.5rem;
   --s3: 0.75rem;
@@ -96,23 +69,22 @@ html {
   --s8: 2rem;
   --s10: 2.5rem;
   --s12: 3rem;
-  --card-pad: 1.5rem;
-  --gap: 1rem;
-  --sidebar: 5.5rem;
+  --s16: 4rem;
+  --card-pad: 1.75rem;
+  --gap: 1.25rem;
+  --sidebar: 5rem;
 
-  /* Depth */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px -4px rgba(0, 0, 0, 0.4);
-  --shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 12px 24px -8px rgba(0, 0, 0, 0.45), 0 40px 80px -24px rgba(0, 0, 0, 0.7);
-  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3), 0 24px 48px -12px rgba(0, 0, 0, 0.55), 0 64px 120px -32px rgba(0, 0, 0, 0.8);
-  --hi: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  /* Depth: barely there */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 12px 32px -16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 64px -24px rgba(0, 0, 0, 0.7);
 
-  /* Motion */
-  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
-  --t-fast: 180ms;
-  --t-med: 320ms;
-  --t-slow: 600ms;
+  /* Motion: slow in, gentle out. No overshoot. */
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 160ms;
+  --t-med: 280ms;
+  --t-slow: 700ms;
 }
 
 @media (prefers-reduced-motion: reduce) {

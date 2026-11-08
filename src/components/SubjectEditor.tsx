@@ -6,7 +6,7 @@ import { rememberSubject, toast } from '../lib/state';
 import { AutoInput } from './auto';
 import { Button, Field } from './ui';
 
-export const SUBJECT_COLOURS = ['#FF7A3D', '#B06BFF', '#3DD9FF', '#34E0A1', '#FF4F8B', '#FFC04D', '#5B7CFF', '#FF6B6B'];
+export const SUBJECT_COLOURS = ['#D9926A', '#A99BC9', '#86AFC4', '#8FB996', '#C98FA3', '#D6B37A', '#8C9AD0', '#C98A84'];
 
 const update = (id: string, patch: Partial<Subject>) => db.subjects.update(id, patch);
 

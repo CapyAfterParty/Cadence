@@ -13,11 +13,11 @@ export function useScans(ownerType: ScanOwner, ownerId: ID | undefined) {
   );
 }
 
-export function ScanUploadButton({ ownerType, ownerId, label = 'Upload scan', size }: { ownerType: ScanOwner; ownerId: ID; label?: string; size?: 'sm' }) {
+export function ScanUploadButton({ ownerType, ownerId, label = 'Upload scan', size, quiet }: { ownerType: ScanOwner; ownerId: ID; label?: string; size?: 'sm'; quiet?: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   return (
     <>
-      <Button size={size} onClick={() => input.current?.click()}>
+      <Button size={size} variant={quiet ? 'ghost' : undefined} onClick={() => input.current?.click()}>
         <ImagePlus size={16} strokeWidth={1.5} /> {label}
       </Button>
       <input

@@ -2,8 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, CalendarCheck, Check, Eye, EyeOff, Layers, Lock, Plus, RotateCcw, Upload, Zap } from 'lucide-react';
 import { db, newRow } from '../db/db';
 import type { Subject } from '../db/types';
-import { Emblem } from '../components/gl/Emblem';
-import { Logo } from '../components/Logo';
+import { Enso, Logo } from '../components/Logo';
 import { Button, IconTile, cx } from '../components/ui';
 import { SUBJECT_COLOURS } from '../components/SubjectEditor';
 import { greeting } from '../lib/dates';
@@ -83,7 +82,7 @@ export function LockScreen({ mode }: { mode: 'local' | 'site' }) {
     <div className={cx('gate', state === 'ok' && 'leaving')}>
       <TopBar />
       <main className="lock-center">
-        <Emblem size="clamp(11rem, 22vh, 17rem)" />
+        <Enso size="clamp(6rem, 13vh, 9rem)" />
         <h1 className="lock-title">
           {mode === 'site' ? (
             <>
@@ -228,13 +227,13 @@ export function Onboarding() {
       <main className="ob-center">
         {id === 'welcome' && (
           <Panel k={0}>
-            <Emblem size="clamp(13rem, 30vh, 20rem)" />
+            <Enso size="clamp(7rem, 16vh, 11rem)" />
             <h1 className="ob-hero">
               Study in <span className="serif">rhythm.</span>
             </h1>
             <p className="ob-lede">A private home for your papers, mistakes and weekly loop. Everything stays on this device.</p>
             <div className="ob-actions">
-              <Button variant="primary" size="lg" autoFocus onClick={next}>
+              <Button variant="primary" size="lg" onClick={next}>
                 Get started <ArrowRight size={18} strokeWidth={2} />
               </Button>
               <Button size="lg" variant="ghost" onClick={() => fileRef.current?.click()}>
@@ -379,9 +378,7 @@ export function Onboarding() {
                 { tone: 'gold' as const, icon: <CalendarCheck size={20} strokeWidth={1.8} />, t: 'Sunday check-in', d: 'Your week, pre-filled. Reflect, set three goals, go again.' },
               ].map((b, i) => (
                 <div key={b.t} className="beat" style={{ ['--i' as string]: i }}>
-                  <IconTile tone={b.tone} size="2.75rem">
-                    {b.icon}
-                  </IconTile>
+                  <span className="beat-n">{i + 1}</span>
                   <div>
                     <strong>{b.t}</strong>
                     <p>{b.d}</p>

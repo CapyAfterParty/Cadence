@@ -88,22 +88,22 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
         <Button variant="primary" onClick={() => nav(`/redo?subject=${subject.id}`)} disabled={!open.length}>
           <RotateCcw size={16} strokeWidth={SW} /> Start redo
         </Button>
-        <Button onClick={() => openUI({ quickAdd: { preset } })}>
+        <Button variant="ghost" onClick={() => openUI({ quickAdd: { preset } })}>
           <Plus size={16} strokeWidth={SW} /> Add mistake
         </Button>
-        <Button onClick={() => openUI({ bulk: preset })}>
+        <Button variant="ghost" onClick={() => openUI({ bulk: preset })}>
           <ListPlus size={16} strokeWidth={SW} /> Bulk add
         </Button>
-        <Button onClick={() => openUI({ logPaper: { preset } })}>
+        <Button variant="ghost" onClick={() => openUI({ logPaper: { preset } })}>
           <FileText size={16} strokeWidth={SW} /> Log paper
         </Button>
-        <Button onClick={addNote}>
+        <Button variant="ghost" onClick={addNote}>
           <NotebookPen size={16} strokeWidth={SW} /> Add note
         </Button>
-        <Button onClick={() => startStudy(subject.id)}>
+        <Button variant="ghost" onClick={() => startStudy(subject.id)}>
           <Play size={16} strokeWidth={SW} /> Start timer
         </Button>
-        <ScanUploadButton ownerType="subject" ownerId={subject.id} />
+        <ScanUploadButton ownerType="subject" ownerId={subject.id} quiet />
       </div>
 
       <div className="grid-2">

@@ -10,8 +10,7 @@ import { AutoInput } from '../components/auto';
 import { Topbar } from '../components/Topbar';
 import { AddSubject, SubjectEditor } from '../components/SubjectEditor';
 import { useScans } from '../components/Scans';
-import { Emblem } from '../components/gl/Emblem';
-import { Wordmark } from '../components/Logo';
+import { Enso, Wordmark } from '../components/Logo';
 
 const SW = 1.7;
 
@@ -239,15 +238,15 @@ function AppearanceSection() {
   const photos = useScans('hero', 'hero');
   const input = useRef<HTMLInputElement>(null);
   return (
-    <Section id="appearance" title="Appearance" desc="Home is lit by a living aurora. You can lay your own photo over it." index={3}>
+    <Section id="appearance" title="Appearance" desc="Home is deliberately quiet. You can add one photo of your own behind it." index={3}>
       <div className="s-rows">
-        <Row title="Home background" desc={photos?.length ? 'Your photo, melted into the aurora.' : 'The Cadence aurora.'}>
+        <Row title="Home background" desc={photos?.length ? 'Your photo, softly dimmed behind Home.' : 'Plain and calm.'}>
           <Button size="sm" onClick={() => input.current?.click()}>
             <Upload size={14} strokeWidth={SW} /> {photos?.length ? 'Replace photo' : 'Use my photo'}
           </Button>
           {!!photos?.length && (
             <Button size="sm" variant="ghost" onClick={() => db.scans.bulkDelete(photos.map((p) => p.id))}>
-              Back to aurora
+              Remove photo
             </Button>
           )}
           <input
@@ -375,7 +374,7 @@ function AboutSection() {
   return (
     <Section id="about" title="About" index={6}>
       <div className="s-about">
-        <Emblem size="11rem" />
+        <Enso size="7rem" />
         <div className="stack" style={{ gap: '0.6rem' }}>
           <Wordmark size="var(--fs-44)" />
           <p className="muted" style={{ maxWidth: '30rem' }}>

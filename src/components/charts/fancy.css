@@ -2,23 +2,17 @@
   font-family: var(--mono);
   font-size: var(--fs-11);
   fill: var(--text-3);
-  letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
 
 .axis-text.on {
-  fill: var(--text);
-}
-
-.grid-line {
-  stroke: rgba(255, 255, 255, 0.05);
-  stroke-dasharray: 2 6;
+  fill: var(--text-2);
 }
 
 .draw {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: draw 1400ms var(--ease-out) forwards;
+  animation: draw 1600ms var(--ease-out) 150ms forwards;
 }
 
 @keyframes draw {
@@ -27,41 +21,10 @@
   }
 }
 
-.area-fade {
-  animation: fade 1200ms var(--ease) 300ms both;
-}
-
 .pop {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pop-in 520ms var(--spring) 900ms both;
+  animation: fade 600ms var(--ease) 1200ms both;
 }
 
-@keyframes pop-in {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-}
-
-.pulse-ring {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: pulse-ring 2.4s var(--ease-out) 1.2s infinite;
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-/* Loop ring */
 .loop-ring {
   position: relative;
   width: 100%;
@@ -72,14 +35,6 @@
   position: absolute;
   inset: 0;
   overflow: visible;
-  animation: ring-spin-in 1400ms var(--ease-out) both;
-}
-
-@keyframes ring-spin-in {
-  from {
-    transform: rotate(-40deg) scale(0.92);
-    opacity: 0;
-  }
 }
 
 .loop-ring-center {
@@ -93,7 +48,7 @@
 }
 
 .ring-fill {
-  animation: ring-fill 1500ms var(--ease-out) both;
+  animation: ring-fill 1800ms var(--ease-out) both;
 }
 
 @keyframes ring-fill {
@@ -102,242 +57,91 @@
   }
 }
 
-.ring-cap {
-  filter: drop-shadow(0 0 4px #fff);
-  animation: fade 400ms var(--ease) both;
-}
-
-.rings {
-  width: 100%;
-  aspect-ratio: 1;
-}
-
-.rings svg {
-  display: block;
-  overflow: visible;
-}
-
-/* Stacked bars */
-.sbars {
+.zbars {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   height: 100%;
 }
 
-.sbars-plot {
+.zbars-plot {
   flex: 1;
   min-height: 0;
   display: flex;
   align-items: flex-end;
-  gap: 0.7rem;
-  padding-bottom: 1.1rem;
+  gap: 0.75rem;
 }
 
-.sbar-col {
-  position: relative;
+.zbar-col {
   flex: 1;
   height: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
+  align-items: flex-end;
+  justify-content: center;
 }
 
-.sbar {
+.zbar {
   width: 100%;
-  max-width: 2.1rem;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
-  border-radius: 0.7rem;
-  overflow: hidden;
+  max-width: 0.45rem;
+  border-radius: 1rem;
+  background: var(--text-3);
   transform-origin: bottom;
-  animation: grow-y 900ms var(--spring) both;
-  -webkit-box-reflect: below 5px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.12));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  animation: grow-y 1000ms var(--ease-out) both;
 }
 
-.sbar-seg {
-  min-height: 3px;
-  flex-basis: 0;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 1px 0 0 rgba(255, 255, 255, 0.12);
+.zbar.on {
+  background: var(--accent);
 }
 
-.sbar-seg.empty {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: none;
-}
-
-.sbar-col:not(.on) .sbar {
-  opacity: 0.88;
-}
-
-.sbar-col.on .sbar {
-  filter: drop-shadow(0 0 0.9rem rgba(255, 140, 90, 0.45));
-}
-
-.sbar-value {
-  position: absolute;
-  top: -0.2rem;
-  font-size: var(--fs-11);
-  font-family: var(--mono);
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.5rem;
-  background: rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  white-space: nowrap;
-  animation: pop-in 500ms var(--spring) 900ms both;
-}
-
-.sbars-labels {
+.zbars-labels {
   display: flex;
-  gap: 0.7rem;
+  gap: 0.75rem;
   font-family: var(--mono);
   font-size: var(--fs-11);
   color: var(--text-3);
 }
 
-.sbars-labels span {
+.zbars-labels span {
   flex: 1;
   text-align: center;
 }
 
-.sbars-labels span.on {
-  color: var(--text);
+.zbars-labels span.on {
+  color: var(--text-2);
 }
 
 @keyframes grow-y {
   from {
     transform: scaleY(0);
-    opacity: 0;
   }
 }
 
-/* Smooth area and multi line */
-.sarea,
+.spark,
 .mline {
   width: 100%;
   height: 100%;
-  min-height: 6rem;
+  min-height: 5rem;
 }
 
-.sarea svg,
+.spark svg,
 .mline svg {
   display: block;
   overflow: visible;
 }
 
-.target-band {
-  fill: url(#none);
-  fill: rgba(124, 255, 178, 0.05);
-}
-
-.target-line {
-  stroke: rgba(124, 255, 178, 0.55);
-  stroke-dasharray: 4 5;
-}
-
-/* Gauge */
-.arc-gauge {
+.arc {
   width: 100%;
-  max-width: 19rem;
+  max-width: 16rem;
   display: block;
   overflow: visible;
-}
-
-.arc-gauge .tick {
-  animation: tick-in 400ms var(--ease) both;
-}
-
-@keyframes tick-in {
-  from {
-    opacity: 0;
-  }
-}
-
-.gauge-label {
-  font-family: var(--mono);
-  font-size: 11px;
-  fill: #fff;
-}
-
-/* Scene */
-.scene {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.scene svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  filter: blur(1.2px) saturate(118%);
-  transform: scale(1.03);
-}
-
-.scene::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(7, 7, 14, 0.5) 0%, rgba(7, 7, 14, 0.05) 30%, rgba(7, 7, 14, 0) 55%, rgba(7, 7, 14, 0.82) 100%);
-}
-
-.star {
-  animation: twinkle 3.2s ease-in-out infinite alternate;
-}
-
-@keyframes twinkle {
-  from {
-    opacity: 0.15;
-  }
-  to {
-    opacity: 0.9;
-  }
-}
-
-.scene-clouds {
-  filter: blur(5px);
-  animation: clouds 40s ease-in-out infinite alternate;
-}
-
-@keyframes clouds {
-  to {
-    transform: translateX(-30px);
-  }
-}
-
-.scene-sun {
-  transform-origin: 205px 470px;
-  animation: breathe 9s ease-in-out infinite alternate;
-}
-
-@keyframes breathe {
-  to {
-    transform: scale(1.08);
-    opacity: 0.9;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .draw,
   .pop,
   .ring-fill,
-  .sbar,
-  .arc-gauge .tick,
-  .loop-ring svg,
-  .area-fade {
+  .zbar {
     animation: none;
     stroke-dashoffset: 0;
-  }
-  .scene-clouds,
-  .scene-sun,
-  .star,
-  .pulse-ring {
-    animation: none;
   }
 }

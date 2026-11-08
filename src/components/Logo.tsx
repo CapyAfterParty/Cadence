@@ -1,42 +1,63 @@
-import { useId } from 'react';
+import { useId, useMemo } from 'react';
 
 /**
- * The Cadence mark: an open loop (the weekly cycle) with a bright beat at
- * its opening, where each new week begins.
+ * The Cadence mark: an ensō, the single brushstroke circle of Zen.
+ * Open, imperfect, and it is the weekly loop.
+ * The shape is generated as a tapered stroke so it reads like ink.
  */
-export function LogoMark({ size = '2rem', animated }: { size?: string; animated?: boolean }) {
+function ensoPath(R = 24, base = 7.2) {
+  const n = 96;
+  const start = (-58 * Math.PI) / 180; // begins upper right
+  const sweep = (322 * Math.PI) / 180; // and travels round, leaving a gap
+  const outer: [number, number][] = [];
+  const inner: [number, number][] = [];
+  const centre: [number, number][] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    // Pressure: lands soft, swells through the stroke, lifts away thin.
+    const w = base * (0.42 + 0.75 * Math.sin(Math.PI * Math.min(1, t * 1.08)) ** 0.8) * (1 - 0.7 * t ** 3);
+    const wob = 0.6 * Math.sin(t * 9.0) + 0.35 * Math.sin(t * 23.0);
+    const a = start - t * sweep; // counter-clockwise on screen
+    const r = R + wob * 0.35;
+    const c = Math.cos(a);
+    const s = Math.sin(a);
+    outer.push([32 + (r + w / 2) * c, 32 + (r + w / 2) * s]);
+    inner.push([32 + (r - w / 2 + wob * 0.15) * c, 32 + (r - w / 2 + wob * 0.15) * s]);
+    centre.push([32 + r * c, 32 + r * s]);
+  }
+  const f = (p: [number, number]) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`;
+  const shape = `M${f(outer[0])} ` + outer.slice(1).map((p) => `L${f(p)}`).join(' ') + ' ' + inner.reverse().map((p) => `L${f(p)}`).join(' ') + ' Z';
+  const spine = `M${f(centre[0])} ` + centre.slice(1).map((p) => `L${f(p)}`).join(' ');
+  return { shape, spine };
+}
+
+export function LogoMark({ size = '2rem', draw }: { size?: string; draw?: boolean }) {
   const id = useId().replace(/:/g, '');
+  const { shape, spine } = useMemo(() => ensoPath(), []);
   return (
-    <svg viewBox="0 0 64 64" width={size} height={size} className={animated ? 'logo-mark animated' : 'logo-mark'} aria-hidden="true">
-      <defs>
-        <linearGradient id={`lg${id}`} x1="0.1" y1="0" x2="0.9" y2="1">
-          <stop offset="0" stopColor="#ffb06b" />
-          <stop offset="0.35" stopColor="#ff4f7b" />
-          <stop offset="0.7" stopColor="#a96bff" />
-          <stop offset="1" stopColor="#4d9bff" />
-        </linearGradient>
-        <linearGradient id={`hl${id}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fff" stopOpacity="0.85" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
-        </linearGradient>
-        <radialGradient id={`dot${id}`}>
-          <stop offset="0" stopColor="#fff" />
-          <stop offset="0.6" stopColor="#ffe9dc" />
-          <stop offset="1" stopColor="#ffb38a" />
-        </radialGradient>
-        <filter id={`gl${id}`} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="2.4" />
-        </filter>
-      </defs>
-      <path className="lm-ring" d="M48.38 20.53 A20 20 0 1 0 48.38 43.47" fill="none" stroke={`url(#lg${id})`} strokeWidth="9" strokeLinecap="round" />
-      <path d="M40.5 15.2 A18.5 18.5 0 0 0 14.2 26" fill="none" stroke={`url(#hl${id})`} strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-      <circle cx="53" cy="32" r="6" fill="#ffc9a8" filter={`url(#gl${id})`} className="lm-glow" />
-      <circle cx="53" cy="32" r="4.4" fill={`url(#dot${id})`} className="lm-dot" />
+    <svg viewBox="0 0 64 64" width={size} height={size} className={draw ? 'logo-mark draw-in' : 'logo-mark'} aria-hidden="true">
+      {draw && (
+        <defs>
+          <mask id={`m${id}`}>
+            <path d={spine} fill="none" stroke="#fff" strokeWidth="12" strokeLinecap="round" pathLength={1} className="enso-reveal" />
+          </mask>
+        </defs>
+      )}
+      <path d={shape} fill="currentColor" mask={draw ? `url(#m${id})` : undefined} />
     </svg>
   );
 }
 
-export function Wordmark({ size = '1.15rem' }: { size?: string }) {
+/** Large, slowly breathing ensō for the lock screen and onboarding. */
+export function Enso({ size = '9rem' }: { size?: string }) {
+  return (
+    <div className="enso" style={{ width: size, height: size }} aria-hidden="true">
+      <LogoMark size="100%" draw />
+    </div>
+  );
+}
+
+export function Wordmark({ size = '1.1rem' }: { size?: string }) {
   return (
     <span className="wordmark" style={{ fontSize: size }}>
       cadence
@@ -44,7 +65,7 @@ export function Wordmark({ size = '1.15rem' }: { size?: string }) {
   );
 }
 
-export function Logo({ size = '2rem' }: { size?: string }) {
+export function Logo({ size = '1.6rem' }: { size?: string }) {
   return (
     <span className="logo">
       <LogoMark size={size} />

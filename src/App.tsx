@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Check, Undo2 } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
 import { HeroPhoto } from './components/Backdrop';
-import { Aurora } from './components/gl/Aurora';
 import { Button } from './components/ui';
 import { Palette } from './features/Search';
 import { BulkMistakes, QuickAddMistake } from './features/MistakeForms';
@@ -115,18 +114,10 @@ function Toasts() {
   );
 }
 
-function intensityFor(path: string) {
-  if (path === '/') return 1.05;
-  if (path === '/settings') return 0.75;
-  return 0.5;
-}
-
 function AppShell() {
   useAutoLock();
-  const { pathname } = useLocation();
   return (
     <>
-      <Aurora intensity={intensityFor(pathname)} />
       <HeroPhoto />
       <div className="shell">
         <Sidebar />
@@ -164,7 +155,7 @@ export default function App() {
         <AppShell />
       ) : (
         <>
-          <Aurora intensity={1.1} />
+          <div className="calm-bg" />
           {phase === 'locked' && <LockScreen mode="local" />}
           {phase === 'site' && <LockScreen mode="site" />}
           {phase === 'onboarding' && <Onboarding />}

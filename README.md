@@ -57,11 +57,15 @@ The app asks the browser for persistent storage. Export a JSON backup from Setti
 
 ## Design
 
-- **Scale:** sizes are in rem and the root size is fluid with the viewport (about 16px on a 16" MacBook Pro, about 19.7px on a 27" 5K display), so the whole composition scales as one piece.
-- **Type:** Geist for the interface, Geist Mono for small labels, Instrument Serif italic for accents.
-- **Colour:** one signature gradient per beat of the loop: orchid (flashcards), lagoon (papers), coral (mistakes), gold (check-in), ember (study), meadow (targets).
-- **Depth:** layered glass cards with a lit hairline edge, a cursor-following sheen and a slight 3D tilt; app-icon style tiles.
-- **Live background:** a WebGL aurora (domain-warped noise) and a raymarched 3D emblem on the lock screen, onboarding and About. Both pause off-screen and when the tab is hidden, honour reduced motion, and fall back to CSS when WebGL is unavailable.
+Minimal and calm, in the spirit of Zen.
+
+- **Mark:** an ensō, the single brushstroke circle. It is the weekly loop, and it draws itself on the lock screen.
+- **Surface:** warm near-black, matte cards with hairline edges. No gradients, glows or blur.
+- **Colour:** warm greys plus one muted clay accent, used only for "now", "today" and the primary action. Subject colours are muted earth tones.
+- **Type:** Geist at light weights for numbers, Geist Mono for small labels, Instrument Serif italic for a single word in a headline.
+- **Charts:** one thin line, ring or set of bars each; the accent marks the current point.
+- **Motion:** slow fades and draws, no bounce. Reduced-motion settings are respected.
+- **Scale:** sizes are in rem with a fluid root, so a 16" laptop and a 27" display get the same composition.
 
 ## Code map
 
@@ -70,6 +74,5 @@ The app asks the browser for persistent storage. Export a JSON backup from Setti
 - `src/components`: the design system (Card, Stat, Chip, Button, inputs, Sidebar, charts)
 - `src/features`: search/palette, mistake and paper forms, timer controller
 - `src/pages`: one file per screen
-- `src/components/gl`: the WebGL aurora and emblem
 - `src/features/Gate.tsx`: lock screen and onboarding; `src/lib/security.ts`: the password logic
 - `src/styles/tokens.css`: all design tokens
