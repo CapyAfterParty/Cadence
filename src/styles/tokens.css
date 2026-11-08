@@ -1,0 +1,61 @@
+/* Design tokens. Every screen uses only these. Dark first. */
+:root {
+  color-scheme: dark;
+
+  --bg: #0a0a0c;
+  --bg-raised: #141417;
+  --glass: rgba(255, 255, 255, 0.06);
+  --glass-strong: rgba(255, 255, 255, 0.1);
+  --glass-hover: rgba(255, 255, 255, 0.09);
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --blur: 24px;
+
+  --accent: #ff6a2b;
+  --accent-soft: rgba(255, 106, 43, 0.16);
+  --on-accent: #1a0a03;
+  --green: #34c759;
+  --amber: #ff9f0a;
+  --red: #ff453a;
+
+  --text: #ffffff;
+  --text-2: rgba(255, 255, 255, 0.62);
+  --text-3: rgba(255, 255, 255, 0.5);
+  --track: rgba(255, 255, 255, 0.1);
+
+  --r-card: 24px;
+  --r-input: 14px;
+  --r-full: 999px;
+
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-15: 15px;
+  --fs-17: 17px;
+  --fs-22: 22px;
+  --fs-28: 28px;
+  --fs-48: 48px;
+
+  --s1: 8px;
+  --s2: 16px;
+  --s3: 24px;
+  --s4: 32px;
+  --s5: 40px;
+  --s6: 48px;
+  --card-pad: 24px;
+  --gap: 16px;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --t-fast: 200ms;
+  --t-med: 300ms;
+
+  --font: 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-fast: 0ms;
+    --t-med: 0ms;
+  }
+}
