@@ -79,8 +79,14 @@ textarea {
 /* ---------- Layout ---------- */
 
 .shell {
+  position: relative;
   display: flex;
   min-height: 100%;
+}
+
+.main {
+  position: relative;
+  z-index: 1;
 }
 
 .main {
@@ -106,7 +112,7 @@ textarea {
 
 .topbar h1 {
   font-size: var(--fs-28);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.02em;
   margin-right: auto;
 }
@@ -171,17 +177,35 @@ textarea {
 
 .card {
   position: relative;
-  background: var(--glass);
-  backdrop-filter: blur(var(--blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
-  border: 1px solid var(--border);
+  isolation: isolate;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0.035) 100%), rgba(18, 18, 21, 0.42);
+  backdrop-filter: blur(var(--blur)) saturate(170%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: var(--r-card);
-  box-shadow: var(--shadow);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 0 0 1px rgba(255, 255, 255, 0.015), 0 24px 60px -18px rgba(0, 0, 0, 0.75), 0 2px 8px rgba(0, 0, 0, 0.25);
   padding: var(--card-pad);
   min-width: 0;
   animation: rise var(--t-med) var(--ease) both;
   animation-delay: calc(var(--i, 0) * 40ms);
   transition: transform var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+
+/* A soft sheen that follows the cursor. */
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--t-med) var(--ease);
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, 0.07), transparent 45%);
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 .card.hoverable:hover {
@@ -204,7 +228,7 @@ textarea {
 .card-head h2,
 .card-head h3 {
   font-size: var(--fs-17);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
@@ -215,18 +239,27 @@ textarea {
 }
 
 .card-icon {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: var(--glass-strong);
   flex: none;
+  color: #1a1a1d;
+  background: linear-gradient(150deg, #ffffff 0%, #d9d9de 55%, #a9a9b2 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -2px 4px rgba(0, 0, 0, 0.18), 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
 .card-icon.accent {
-  background: var(--accent);
-  color: var(--on-accent);
+  color: #fff;
+  background: linear-gradient(150deg, #ffa36c 0%, #ff6a2b 50%, #d9440f 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 6px 18px rgba(255, 106, 43, 0.4);
+}
+
+.card-icon.dark {
+  color: #fff;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes rise {
@@ -257,8 +290,8 @@ textarea {
 
 .stat-value {
   font-size: var(--fs-48);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 500;
+  letter-spacing: -0.045em;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
 }
@@ -273,9 +306,9 @@ textarea {
 
 .stat-unit {
   font-size: var(--fs-17);
-  font-weight: 500;
+  font-weight: 400;
   color: var(--text-2);
-  margin-left: 2px;
+  margin-left: 3px;
   letter-spacing: 0;
 }
 
@@ -287,6 +320,7 @@ textarea {
 /* ---------- Buttons ---------- */
 
 .btn {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 6px 18px rgba(0, 0, 0, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -294,10 +328,10 @@ textarea {
   height: 40px;
   padding: 0 18px;
   border-radius: var(--r-full);
-  border: 1px solid var(--border);
-  background: var(--glass);
-  backdrop-filter: blur(var(--blur));
-  -webkit-backdrop-filter: blur(var(--blur));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
   font-size: var(--fs-13);
   font-weight: 500;
   cursor: pointer;
@@ -321,14 +355,15 @@ textarea {
 }
 
 .btn.primary {
-  background: var(--accent);
+  background: linear-gradient(150deg, #ffa36c, #ff6a2b 55%, #e2501a);
   border-color: transparent;
-  color: var(--on-accent);
+  color: #fff;
   font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 8px 24px rgba(255, 106, 43, 0.4);
 }
 
 .btn.primary:hover {
-  background: #ff7a42;
+  background: linear-gradient(150deg, #ffb07f, #ff7a42 55%, #ea5a22);
 }
 
 .btn.white {
@@ -341,6 +376,7 @@ textarea {
   background: transparent;
   border-color: transparent;
   backdrop-filter: none;
+  box-shadow: none;
 }
 
 .btn.ghost:hover {
@@ -381,8 +417,9 @@ textarea {
   height: 32px;
   padding: 0 14px;
   border-radius: var(--r-full);
-  border: 1px solid var(--border);
-  background: var(--glass);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   font-size: var(--fs-13);
   cursor: pointer;
   white-space: nowrap;
@@ -401,6 +438,7 @@ textarea {
   background: #fff;
   color: #111;
   border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1), 0 6px 18px rgba(255, 255, 255, 0.18);
 }
 
 .chip .dot {
@@ -749,6 +787,9 @@ button.pill {
 /* ---------- Search trigger ---------- */
 
 .search-trigger {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -780,6 +821,9 @@ button.pill {
 
 @media (max-width: 700px) {
   .search-trigger {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
     min-width: 0;
   }
   .search-trigger .label,
@@ -1086,8 +1130,17 @@ button.list-item {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--accent);
+  background: linear-gradient(90deg, #d9440f, var(--accent) 60%, #ffa36c);
+  box-shadow: 0 0 12px rgba(255, 106, 43, 0.55);
+  transform-origin: left;
+  animation: grow-x-bar 700ms var(--ease) both;
   transition: width var(--t-med) var(--ease);
+}
+
+@keyframes grow-x-bar {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 .progress .target {

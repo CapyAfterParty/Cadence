@@ -22,16 +22,25 @@ export function Card({
   hoverable?: boolean;
 } & React.HTMLAttributes<HTMLElement>) {
   return (
-    <section className={cx('card', hoverable && 'hoverable', className)} style={{ ['--i' as string]: index, ...style }} {...rest}>
+    <section
+      className={cx('card', hoverable && 'hoverable', className)}
+      style={{ ['--i' as string]: index, ...style }}
+      onMouseMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
+        e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
+      }}
+      {...rest}
+    >
       {children}
     </section>
   );
 }
 
-export function CardHead({ icon, title, aside, accent }: { icon?: ReactNode; title: ReactNode; aside?: ReactNode; accent?: boolean }) {
+export function CardHead({ icon, title, aside, accent, tone }: { icon?: ReactNode; title: ReactNode; aside?: ReactNode; accent?: boolean; tone?: 'dark' }) {
   return (
     <div className="card-head">
-      {icon && <span className={cx('card-icon', accent && 'accent')}>{icon}</span>}
+      {icon && <span className={cx('card-icon', accent && 'accent', tone)}>{icon}</span>}
       <h2>{title}</h2>
       {aside != null && <span className="aside">{aside}</span>}
     </div>

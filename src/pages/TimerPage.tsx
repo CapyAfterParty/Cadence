@@ -233,7 +233,7 @@ function FlashcardsCard({ data }: { data: AllData }) {
               <span className="small muted">
                 {[l.accuracyPct != null && `${l.accuracyPct}%`, l.minutes != null && `${l.minutes}m`].filter(Boolean).join(' · ')}
               </span>
-              <span className="num" style={{ width: 72, textAlign: 'right', fontWeight: 600 }}>
+              <span className="num" style={{ width: 96, textAlign: 'right', fontWeight: 600, whiteSpace: 'nowrap' }}>
                 {l.cardsDone} cards
               </span>
               <Button icon size="sm" variant="ghost" aria-label="Delete log" onClick={() => deleteFlashLog(l.id)}>

@@ -220,18 +220,21 @@ export function SearchBox({ variant, onDone }: { variant: 'modal' | 'hero'; onDo
 
   return (
     <div className="hero-search">
-      <div className="hero-input">
-        <Search size={20} strokeWidth={1.5} />
+      <div className="ask">
+        {!q && !focused && (
+          <span className="ask-ph" aria-hidden="true">
+            <i className="fake-caret-inline" />
+            Search or add anything
+          </span>
+        )}
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={onKey}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Search or add anything"
           aria-label="Search or add anything"
         />
-        <span className="kbd">Ctrl K</span>
       </div>
       {showResults && <div className="hero-results">{results}</div>}
     </div>

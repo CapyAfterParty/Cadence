@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
+import { Backdrop } from './components/Backdrop';
 import { Button } from './components/ui';
 import { Palette } from './features/Search';
 import { BulkMistakes, QuickAddMistake } from './features/MistakeForms';
@@ -84,6 +85,7 @@ export default function App() {
   return (
     <HashRouter>
       <div className="shell">
+        <Backdrop />
         <Sidebar />
         <main className="main">
           <Routes>

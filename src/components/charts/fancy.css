@@ -1,0 +1,350 @@
+.fancy-plot,
+.waves {
+  width: 100%;
+  position: relative;
+}
+
+.fancy-plot svg,
+.waves svg {
+  display: block;
+  overflow: visible;
+}
+
+.axis-text {
+  font-size: 11px;
+  fill: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.axis-text.on {
+  fill: var(--text);
+}
+
+.draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1100ms var(--ease) forwards;
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pop-in 400ms var(--ease) 1000ms both;
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Pill matrix */
+.pm {
+  display: grid;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 10px;
+}
+
+.pm-label {
+  font-size: 11px;
+  color: var(--text-2);
+  text-align: right;
+  padding-right: 8px;
+  white-space: nowrap;
+  max-width: 84px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-cell {
+  position: relative;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pm-track {
+  position: absolute;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateX(-50%);
+}
+
+.pm-pill {
+  position: relative;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ff8a4f, #ff5f1f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 10px rgba(255, 95, 31, 0.25);
+  transform-origin: center;
+  animation: grow-x 500ms var(--ease) both;
+  opacity: 0.85;
+}
+
+.pm-pill.on {
+  opacity: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 16px rgba(255, 106, 43, 0.7);
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+
+.pm-axis {
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: center;
+  padding-top: 4px;
+}
+
+.pm-axis.on {
+  color: var(--text);
+}
+
+/* Capsules */
+.caps {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.cap-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cap {
+  flex: 1;
+  width: 100%;
+  max-width: 22px;
+  border-radius: 11px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  padding: 3px;
+  display: flex;
+  overflow: hidden;
+}
+
+.cap-fill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+  transform-origin: bottom;
+  animation: grow-y 600ms var(--ease) both;
+}
+
+.seg {
+  display: block;
+  border-radius: 8px;
+  flex: none;
+}
+
+.seg.a {
+  background: linear-gradient(180deg, #ffd66b, #f5b02e);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.seg.b {
+  background: linear-gradient(180deg, #ff8a4f, #ff5f1f);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.cap.on {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.18), 0 0 18px rgba(245, 176, 46, 0.25);
+}
+
+.cap-label {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.cap-label.on {
+  color: var(--text);
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+
+/* Waves */
+.waves {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  overflow: hidden;
+}
+
+.wave-path {
+  animation: wave var(--dur) linear infinite;
+}
+
+@keyframes wave {
+  to {
+    transform: translateX(calc(-1 * var(--w)));
+  }
+}
+
+/* Barcode */
+.barcode {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.bc {
+  width: 2px;
+  flex: none;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.42);
+  transform-origin: center;
+  animation: grow-y 500ms var(--ease) both;
+}
+
+.bc.idle {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.bc.near {
+  background: rgba(255, 140, 90, 0.7);
+}
+
+.bc.on {
+  width: 3px;
+  background: linear-gradient(180deg, #ffb37f, #ff6a2b 60%, #ff6a2b);
+  box-shadow: 0 0 10px rgba(255, 106, 43, 0.9), 0 0 24px rgba(255, 106, 43, 0.5);
+  height: 100% !important;
+}
+
+.bc-glow {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  width: 60px;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(255, 106, 43, 0.28), transparent);
+  pointer-events: none;
+}
+
+/* Arc gauge */
+.arc-gauge {
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  overflow: visible;
+}
+
+.arc-gauge .tick {
+  animation: tick-in 300ms var(--ease) both;
+}
+
+@keyframes tick-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.gauge-label {
+  font-size: 11px;
+  fill: var(--text);
+  font-weight: 500;
+}
+
+/* Scene */
+.scene {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.scene svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: blur(1.5px) saturate(115%);
+  transform: scale(1.03);
+}
+
+.scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 8, 10, 0.55) 0%, rgba(8, 8, 10, 0.1) 35%, rgba(8, 8, 10, 0.05) 55%, rgba(8, 8, 10, 0.75) 100%);
+}
+
+.scene-clouds {
+  filter: blur(6px);
+  animation: clouds 40s ease-in-out infinite alternate;
+}
+
+@keyframes clouds {
+  to {
+    transform: translateX(-30px);
+  }
+}
+
+.scene-sun {
+  transform-origin: 210px 468px;
+  animation: breathe 9s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  to {
+    transform: scale(1.08);
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw,
+  .pop,
+  .pm-pill,
+  .cap-fill,
+  .bc,
+  .arc-gauge .tick {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .wave-path,
+  .scene-clouds {
+  filter: blur(6px);
+  animation: clouds 40s ease-in-out infinite alternate;
+}
+
+@keyframes clouds {
+  to {
+    transform: translateX(-30px);
+  }
+}
+
+.scene-sun {
+    animation: none;
+  }
+}
