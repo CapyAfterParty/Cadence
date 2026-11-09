@@ -126,10 +126,16 @@ textarea {
 .calm-bg {
   content: '';
   position: fixed;
-  inset: 0;
+  inset: -20vmax;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(70% 50% at 50% -10%, rgba(217, 146, 106, 0.06), transparent 70%);
+  background:
+    radial-gradient(28vmax 22vmax at 22% 18%, rgba(231, 163, 124, 0.13), transparent 70%),
+    radial-gradient(26vmax 22vmax at 78% 12%, rgba(185, 168, 224, 0.11), transparent 70%),
+    radial-gradient(30vmax 24vmax at 60% 70%, rgba(159, 200, 168, 0.06), transparent 70%),
+    radial-gradient(24vmax 20vmax at 15% 85%, rgba(157, 187, 220, 0.05), transparent 70%);
+  will-change: transform;
+  animation: drift 60s ease-in-out infinite alternate
 }
 
 .main {
@@ -145,6 +151,22 @@ textarea {
   flex-direction: column;
   gap: var(--s8);
   animation: page-in var(--t-slow) var(--ease-out) both;
+}
+
+@keyframes drift {
+  50% {
+    transform: translate3d(2vmax, -1.5vmax, 0) rotate(4deg) scale(1.04);
+  }
+  100% {
+    transform: translate3d(-2vmax, 1vmax, 0) rotate(-3deg) scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shell::before,
+  .calm-bg {
+    animation: none;
+  }
 }
 
 @keyframes page-in {
@@ -240,31 +262,47 @@ textarea {
 /* ---------- Card: a matte surface with a hairline edge ---------- */
 
 .card {
-  --tint: transparent;
+  --tint: rgba(255, 248, 236, 0.5);
   position: relative;
   min-width: 0;
   padding: var(--card-pad);
   border-radius: var(--r-card);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition: background var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
-  animation: card-in 800ms var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 50ms);
+  background:
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--tint) 9%, transparent), transparent 60%),
+    linear-gradient(180deg, rgba(255, 248, 236, 0.035), rgba(255, 248, 236, 0) 45%),
+    var(--surface);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line), var(--shadow);
+  transition:
+    transform 500ms var(--soft),
+    box-shadow var(--t-med) var(--ease),
+    background var(--t-med) var(--ease);
+  animation: card-in 900ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 60ms)
+}
+
+.card.hoverable,
+.card.tilt {
+  cursor: default;
 }
 
 .card.hoverable {
   cursor: pointer;
 }
 
+.card.tilt:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow-lg);
+}
+
 .card.hoverable:hover {
-  background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transform: translateY(-3px);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow-lg)
 }
 
 @keyframes card-in {
   from {
     opacity: 0;
-    transform: translateY(0.5rem);
+    transform: translateY(0.75rem) scale(0.985);
   }
 }
 
@@ -312,25 +350,52 @@ textarea {
 
 /* Icons sit plainly: no tiles, no colour. */
 .card-icon {
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 0.5rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.85rem;
   display: grid;
   place-items: center;
   flex: none;
   color: var(--text-2);
   background: var(--surface-3);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.06)
 }
 
-/* Former colour tones collapse into the same quiet tile. */
-.tone-ember,
-.tone-orchid,
-.tone-lagoon,
-.tone-coral,
-.tone-meadow,
+/* Soft hued pebbles: the colour lives in the icon, the tile is a wash. */
+.tone-ember {
+  color: var(--clay);
+  background: color-mix(in srgb, var(--clay) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--clay) 20%, transparent);
+}
+
+.tone-orchid {
+  color: var(--lavender);
+  background: color-mix(in srgb, var(--lavender) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--lavender) 20%, transparent);
+}
+
+.tone-lagoon {
+  color: var(--mist);
+  background: color-mix(in srgb, var(--mist) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--mist) 20%, transparent);
+}
+
+.tone-coral {
+  color: var(--rose);
+  background: color-mix(in srgb, var(--rose) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--rose) 20%, transparent);
+}
+
+.tone-meadow {
+  color: var(--sage);
+  background: color-mix(in srgb, var(--sage) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--sage) 20%, transparent);
+}
+
 .tone-gold {
-  color: var(--text-2);
-  background: var(--surface-3);
+  color: var(--sand);
+  background: color-mix(in srgb, var(--sand) 16%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--sand) 20%, transparent);
 }
 
 /* ---------- Numbers ---------- */
@@ -378,8 +443,8 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  height: 2.5rem;
-  padding: 0 1.1rem;
+  height: 2.75rem;
+  padding: 0 1.25rem;
   border-radius: var(--r-full);
   border: 0;
   font-size: var(--fs-13);
@@ -388,21 +453,23 @@ textarea {
   text-decoration: none;
   cursor: pointer;
   color: var(--text);
-  background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.08), rgba(255, 248, 236, 0.03)), var(--surface-2);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px var(--line), 0 4px 12px -6px rgba(0, 0, 0, 0.5);
   transition:
+    transform 300ms var(--soft),
     background var(--t-fast) var(--ease),
     box-shadow var(--t-fast) var(--ease),
-    opacity var(--t-fast);
+    opacity var(--t-fast)
 }
 
 .btn:hover {
-  background: var(--surface-3);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.11), rgba(255, 248, 236, 0.04)), var(--surface-3);
+  transform: translateY(-1px)
 }
 
 .btn:active {
-  opacity: 0.8;
+  transform: translateY(1px) scale(0.97);
+  transition-duration: 80ms
 }
 
 .btn:disabled {
@@ -415,13 +482,13 @@ textarea {
 }
 
 .btn.primary {
-  color: var(--accent-ink);
-  background: var(--accent);
-  box-shadow: none;
+  color: #2a160b;
+  background: var(--g-clay);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 225, 0.55), inset 0 -2px 4px rgba(150, 70, 30, 0.25), 0 8px 22px -10px rgba(231, 163, 124, 0.75)
 }
 
 .btn.primary:hover {
-  background: #e29f78;
+  filter: brightness(1.05)
 }
 
 .btn.white {
@@ -433,7 +500,7 @@ textarea {
 .btn.ghost {
   background: transparent;
   box-shadow: none;
-  color: var(--text-2);
+  color: var(--text-2)
 }
 
 .btn.ghost:hover {
@@ -472,17 +539,21 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  height: 2rem;
-  padding: 0 0.85rem;
+  height: 2.2rem;
+  padding: 0 0.95rem;
   border-radius: var(--r-full);
   border: 0;
   font-size: var(--fs-13);
   white-space: nowrap;
   cursor: pointer;
   color: var(--text-2);
-  background: transparent;
+  background: rgba(255, 248, 236, 0.03);
   box-shadow: inset 0 0 0 1px var(--line);
-  transition: color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
+  transition: color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast), transform 300ms var(--soft)
+}
+
+.chip:active {
+  transform: scale(0.96);
 }
 
 .chip:hover {
@@ -492,8 +563,8 @@ textarea {
 
 .chip.active {
   color: var(--text);
-  background: var(--surface-3);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.1), rgba(255, 248, 236, 0.04)), var(--surface-3);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px var(--line-strong)
 }
 
 .chip .dot {
@@ -593,14 +664,14 @@ button.pill {
 .select,
 .textarea {
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.65rem 0.9rem;
+  min-height: 2.85rem;
+  padding: 0.65rem 1rem;
   border-radius: var(--r-input);
   border: 0;
   font-size: var(--fs-15);
-  background: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition: box-shadow var(--t-fast) var(--ease);
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--line);
+  transition: box-shadow var(--t-fast) var(--ease)
 }
 
 .input:hover,
@@ -613,7 +684,7 @@ button.pill {
 .select:focus,
 .textarea:focus {
   outline: none;
-  box-shadow: inset 0 0 0 1px var(--focus);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--focus), 0 0 0 4px rgba(231, 163, 124, 0.1)
 }
 
 .input.invalid {
@@ -698,8 +769,8 @@ button.pill {
 }
 
 .checkbox:checked {
-  background: var(--accent);
-  box-shadow: none;
+  background: var(--g-clay);
+  box-shadow: none
 }
 
 .checkbox:checked::after {
@@ -719,23 +790,23 @@ button.pill {
 .segmented {
   position: relative;
   display: inline-flex;
-  padding: 0.2rem;
+  padding: 0.25rem;
   gap: 0.2rem;
   border-radius: var(--r-full);
-  background: var(--bg);
-  box-shadow: inset 0 0 0 1px var(--line);
+  background: rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0 0 1px var(--line)
 }
 
 .segmented .thumb {
   position: absolute;
-  top: 0.2rem;
-  bottom: 0.2rem;
+  top: 0.25rem;
+  bottom: 0.25rem;
   border-radius: var(--r-full);
-  background: var(--surface-3);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.12), rgba(255, 248, 236, 0.05)), var(--surface-3);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.5);
   transition:
-    left var(--t-med) var(--ease-out),
-    width var(--t-med) var(--ease-out);
+    left 450ms var(--soft),
+    width 450ms var(--soft)
 }
 
 .segmented button {
@@ -819,17 +890,17 @@ button.pill {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  height: 2.5rem;
+  height: 2.75rem;
   min-width: 16rem;
-  padding: 0 0.45rem 0 0.9rem;
+  padding: 0 0.5rem 0 1rem;
   border-radius: var(--r-full);
   border: 0;
   color: var(--text-3);
   font-size: var(--fs-13);
   cursor: pointer;
-  background: transparent;
+  background: rgba(255, 248, 236, 0.03);
   box-shadow: inset 0 0 0 1px var(--line);
-  transition: color var(--t-fast), box-shadow var(--t-fast);
+  transition: color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast)
 }
 
 .search-trigger:hover {
@@ -890,9 +961,9 @@ kbd.k {
   max-width: 36rem;
   padding: var(--s8);
   border-radius: var(--r-xl);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line-strong), var(--shadow-lg);
-  animation: sheet-in 420ms var(--ease-out) both;
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.04), rgba(255, 248, 236, 0) 40%), var(--surface);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow-lg);
+  animation: sheet-in 520ms var(--soft) both
 }
 
 .modal.wide {
@@ -1059,13 +1130,13 @@ kbd.k {
   display: flex;
   align-items: center;
   gap: var(--s3);
-  padding: 0.35rem 0.35rem 0.35rem 1.1rem;
-  min-height: 2.75rem;
+  padding: 0.4rem 0.4rem 0.4rem 1.2rem;
+  min-height: 3rem;
   border-radius: var(--r-full);
   font-size: var(--fs-14);
-  background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line-strong), var(--shadow-lg);
-  animation: sheet-in 380ms var(--ease-out) both;
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.06), rgba(255, 248, 236, 0.02)), var(--surface-2);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow-lg);
+  animation: toast-in 520ms var(--soft) both
 }
 
 .toast .t-icon {
@@ -1080,6 +1151,13 @@ kbd.k {
   background: var(--accent);
   opacity: 0.6;
   animation: drain linear forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.94);
+  }
 }
 
 @keyframes drain {
@@ -1124,13 +1202,15 @@ kbd.k {
   display: flex;
   align-items: center;
   gap: var(--s4);
-  padding: 0.75rem 0.75rem 0.75rem 1.25rem;
-  border-radius: var(--r-card);
+  padding: 0.6rem 0.6rem 0.6rem 1.4rem;
+  border-radius: var(--r-full);
   font-size: var(--fs-14);
   color: var(--text-2);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
-  animation: card-in 800ms var(--ease-out) both;
+  background:
+    radial-gradient(60% 200% at 0% 50%, rgba(230, 205, 146, 0.1), transparent 70%),
+    var(--surface);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line), var(--shadow);
+  animation: card-in 900ms var(--ease-out) both
 }
 
 .banner .card-icon {
@@ -1203,34 +1283,38 @@ button.list-item:disabled {
 }
 
 .subject-dot {
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.6rem;
+  height: 0.6rem;
   border-radius: 50%;
   flex: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35)
 }
 
 .progress {
   position: relative;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--line-strong);
+  height: 0.4rem;
+  border-radius: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4)
 }
 
 .progress > span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--text-2);
+  background: var(--g-clay);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 225, 0.4);
   transform-origin: left;
-  animation: grow-bar 1000ms var(--ease-out) both;
+  animation: grow-bar 1200ms var(--ease-out) both
 }
 
 .progress .target {
   position: absolute;
-  top: -0.3rem;
-  bottom: -0.3rem;
-  width: 1px;
-  background: var(--text-2);
+  top: -0.25rem;
+  bottom: -0.25rem;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--text-2)
 }
 
 @keyframes grow-bar {
@@ -1352,4 +1436,16 @@ button.list-item:disabled {
 
 .markdown li::marker {
   color: var(--text-3);
+}
+
+/* Reduced motion: every animation resolves straight to its final state. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
 }

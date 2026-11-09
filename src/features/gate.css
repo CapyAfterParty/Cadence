@@ -129,8 +129,8 @@
   margin-top: var(--s4);
   padding: 0 0.35rem 0 1.1rem;
   border-radius: var(--r-full);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  background: linear-gradient(180deg, rgba(255, 248, 236, 0.05), rgba(255, 248, 236, 0.015)), var(--surface);
+  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow);
   animation: rise-in 1200ms var(--ease-out) 1200ms both;
   transition: box-shadow var(--t-med) var(--ease);
 }
@@ -202,14 +202,19 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: var(--accent-ink);
+  color: #2a160b;
   cursor: pointer;
-  background: var(--accent);
-  transition: opacity var(--t-fast), background var(--t-fast);
+  background: var(--g-clay);
+  box-shadow: inset 0 1px 0 rgba(255, 240, 225, 0.55), 0 6px 16px -8px rgba(231, 163, 124, 0.8);
+  transition: opacity var(--t-fast), transform 300ms var(--soft);
 }
 
 .pw-go:hover {
-  background: #e29f78;
+  transform: scale(1.06);
+}
+
+.pw-go:active {
+  transform: scale(0.92);
 }
 
 .pw-go:disabled {
@@ -449,8 +454,12 @@
 
 .ob-chip.on {
   color: var(--text);
-  background: var(--surface-2);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  background: color-mix(in srgb, var(--clay) 16%, var(--surface-2));
+  box-shadow: inset 0 1px 0 rgba(255, 240, 225, 0.1), inset 0 0 0 1px color-mix(in srgb, var(--clay) 35%, transparent);
+}
+
+.ob-chip:active {
+  transform: scale(0.95);
 }
 
 .ob-add {
@@ -523,8 +532,8 @@
 }
 
 .step-dot.on {
-  width: 1.2rem;
-  background: var(--text-2);
+  width: 1.4rem;
+  background: var(--g-clay);
 }
 
 .ob-panel > .card-icon {

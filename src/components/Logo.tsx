@@ -38,12 +38,17 @@ export function LogoMark({ size = '2rem', draw }: { size?: string; draw?: boolea
     <svg viewBox="0 0 64 64" width={size} height={size} className={draw ? 'logo-mark draw-in' : 'logo-mark'} aria-hidden="true">
       {draw && (
         <defs>
+          <linearGradient id={`ink${id}`} x1="0.1" y1="0" x2="0.9" y2="1">
+            <stop offset="0" stopColor="#f2e2b8" />
+            <stop offset="0.45" stopColor="#e7a37c" />
+            <stop offset="1" stopColor="#e3a4b1" />
+          </linearGradient>
           <mask id={`m${id}`}>
             <path d={spine} fill="none" stroke="#fff" strokeWidth="12" strokeLinecap="round" pathLength={1} className="enso-reveal" />
           </mask>
         </defs>
       )}
-      <path d={shape} fill="currentColor" mask={draw ? `url(#m${id})` : undefined} />
+      <path d={shape} fill={draw ? `url(#ink${id})` : 'currentColor'} mask={draw ? `url(#m${id})` : undefined} />
     </svg>
   );
 }

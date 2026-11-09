@@ -114,24 +114,28 @@
 .heat {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 0.2rem;
-  background: rgba(240, 236, 228, 0.04);
+  border-radius: 50%;
+  background: rgba(240, 236, 228, 0.045);
+  transform: scale(0.82);
 }
 
 .heat.l1 {
-  background: rgba(217, 146, 106, 0.2);
+  background: color-mix(in srgb, var(--sage) 28%, transparent);
 }
 
 .heat.l2 {
-  background: rgba(217, 146, 106, 0.4);
+  background: color-mix(in srgb, var(--sage) 55%, transparent);
 }
 
 .heat.l3 {
-  background: rgba(217, 146, 106, 0.65);
+  background: var(--g-sage);
+  transform: scale(0.9);
 }
 
 .heat.l4 {
-  background: var(--accent);
+  background: var(--g-clay);
+  transform: scale(0.95);
+  box-shadow: 0 0 10px -2px rgba(231, 163, 124, 0.6);
 }
 
 .line-labels {

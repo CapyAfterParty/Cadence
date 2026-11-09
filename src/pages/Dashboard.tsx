@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, CalendarClock, CalendarDays, Check, CircleAlert, FileText, Layers, Repeat, Target, Timer } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import type { Subject } from '../db/types';
 import { addDays, daysBetween, fmtDay, fmtHours, greeting, inWeek, isSunday, lastNDays, parseDay, todayKey, weekStartKey, weekdayLetter } from '../lib/dates';
@@ -177,22 +177,24 @@ function Big({ children, unit }: { children: React.ReactNode; unit?: string }) {
   );
 }
 
+const LOOP_HUES = ['lavender', 'mist', 'rose', 'sand'] as const;
+
 function LoopCard({ data, redoDays }: { data: AllData; redoDays: number }) {
   const weekStart = weekStartKey();
   const today = todayKey();
   const current = loopScore(data, weekStart, redoDays);
   const [flash, paper, redo, check] = current.parts;
   const rows = [
-    { label: 'Flashcards', value: flash.value, status: `${Math.round(flash.value * 7)}/7 days` },
-    { label: 'Timed paper', value: paper.value, status: paper.value >= 1 ? 'Done' : 'Not yet' },
-    { label: 'Mistakes redone', value: redo.value, status: `${Math.round(redo.value * 100)}%` },
-    { label: 'Check-in', value: check.value, status: check.value >= 1 ? 'Done' : isSunday(today) ? 'Today' : 'Sunday' },
+    { label: 'Flashcards', value: flash.value, status: `${Math.round(flash.value * 7)}/7 days`, hue: LOOP_HUES[0] },
+    { label: 'Timed paper', value: paper.value, status: paper.value >= 1 ? 'Done' : 'Not yet', hue: LOOP_HUES[1] },
+    { label: 'Mistakes redone', value: redo.value, status: `${Math.round(redo.value * 100)}%`, hue: LOOP_HUES[2] },
+    { label: 'Check-in', value: check.value, status: check.value >= 1 ? 'Done' : isSunday(today) ? 'Today' : 'Sunday', hue: LOOP_HUES[3] },
   ];
   return (
-    <Card className="z-card loop" index={0}>
-      <CardHead title="This week" aside={`Day ${Math.min(7, daysBetween(weekStart, today) + 1)} of 7`} />
+    <Card className="z-card loop" index={0} tint="#b9a8e0">
+      <CardHead icon={<Repeat size={15} strokeWidth={1.8} />} tone="orchid" title="This week" aside={`Day ${Math.min(7, daysBetween(weekStart, today) + 1)} of 7`} />
       <div className="loop-wrap">
-        <LoopRing parts={current.parts}>
+        <LoopRing parts={current.parts.map((p, i) => ({ ...p, hue: LOOP_HUES[i] }))}>
           <span className="loop-score num">
             <CountUp value={current.score} />
           </span>
@@ -202,7 +204,9 @@ function LoopCard({ data, redoDays }: { data: AllData; redoDays: number }) {
       <ul className="quiet-list">
         {rows.map((r) => (
           <li key={r.label}>
-            <span className={cx('q-mark', r.value >= 1 && 'on')}>{r.value >= 1 && <Check size={10} strokeWidth={2.4} />}</span>
+            <span className={cx('q-mark', r.value >= 1 && 'on')} style={{ ['--h' as string]: `var(--${r.hue})` }}>
+              {r.value >= 1 && <Check size={10} strokeWidth={2.6} />}
+            </span>
             <span className="q-label">{r.label}</span>
             <span className="q-value num">{r.status}</span>
           </li>
@@ -220,8 +224,8 @@ function StudyCard({ data }: { data: AllData }) {
   const h = Math.floor(week / 60);
   const m = Math.round(week % 60);
   return (
-    <Card className="z-card" index={1}>
-      <CardHead title={<Link to="/timer">Study</Link>} aside="This week" />
+    <Card className="z-card" index={1} tint="#e6cd92">
+      <CardHead icon={<Timer size={15} strokeWidth={1.8} />} tone="gold" title={<Link to="/timer">Study</Link>} aside="This week" />
       <Big>
         <CountUp value={h} />
         <span className="u">h</span> <CountUp value={m} />
@@ -229,7 +233,7 @@ function StudyCard({ data }: { data: AllData }) {
       </Big>
       <p className="caption">{studyStreak(data)}-day streak</p>
       <div className="chart">
-        <Bars values={days.map((d) => mins.get(d) ?? 0)} labels={days.map(weekdayLetter)} format={fmtHours} />
+        <Bars values={days.map((d) => mins.get(d) ?? 0)} labels={days.map(weekdayLetter)} format={fmtHours} hue="sand" />
       </div>
     </Card>
   );
@@ -240,8 +244,10 @@ function FlashCard({ data }: { data: AllData }) {
   const days = lastNDays(7);
   const today = cards.get(todayKey()) ?? 0;
   return (
-    <Card className="z-card" index={2}>
+    <Card className="z-card" index={2} tint="#b9a8e0">
       <CardHead
+        icon={<Layers size={15} strokeWidth={1.8} />}
+        tone="orchid"
         title="Flashcards"
         aside={
           <button type="button" className="text-btn" onClick={() => openUI({ flashLog: true })}>
@@ -269,8 +275,8 @@ function MistakesCard({ data, redoDays }: { data: AllData; redoDays: number }) {
   const logged = data.mistakes.filter((m) => days.includes(m.date)).length;
   const open = data.mistakes.filter((m) => !m.cleared).length;
   return (
-    <Card className="z-card" index={3}>
-      <CardHead title={<Link to="/mistakes">Mistakes</Link>} aside={`${open} open`} />
+    <Card className="z-card" index={3} tint="#e3a4b1">
+      <CardHead icon={<CircleAlert size={15} strokeWidth={1.8} />} tone="coral" title={<Link to="/mistakes">Mistakes</Link>} aside={`${open} open`} />
       <Big unit="due">
         <CountUp value={due} />
       </Big>
@@ -321,8 +327,8 @@ function PapersCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const avg = subject ? subjectAverage(data, subject.id) : null;
   const papers = subject ? subjectPapers(data, subject.id) : [];
   return (
-    <Card className="z-card" index={4}>
-      <CardHead title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Papers</Link>} aside="10 weeks" />
+    <Card className="z-card" index={4} tint="#9dbbdc">
+      <CardHead icon={<FileText size={15} strokeWidth={1.8} />} tone="lagoon" title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Papers</Link>} aside="10 weeks" />
       {!data.papers.length ? (
         <Empty text="Log a paper to see the trend." action={<button type="button" className="btn sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject?.id } } })}>Log a paper</button>} />
       ) : (
@@ -346,8 +352,8 @@ function TargetCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const avg = subject ? subjectAverage(data, subject.id) : null;
   const days = subject?.nextTestDate ? daysBetween(today, subject.nextTestDate) : null;
   return (
-    <Card className="z-card" index={5}>
-      <CardHead title="Target" aside={subject?.name} />
+    <Card className="z-card" index={5} tint="#9fc8a8">
+      <CardHead icon={<Target size={15} strokeWidth={1.8} />} tone="meadow" title="Target" aside={subject?.name} />
       {subject ? (
         <>
           <div className="arc-wrap">
@@ -381,8 +387,8 @@ function CalendarCard({ data }: { data: AllData }) {
     }
   });
   return (
-    <Card className="z-card wide" index={6}>
-      <CardHead title="Study calendar" aside={`${fmtHours(monthMinutes(data))} this month`} />
+    <Card className="z-card wide" index={6} tint="#9fc8a8">
+      <CardHead icon={<CalendarDays size={15} strokeWidth={1.8} />} tone="meadow" title="Study calendar" aside={`${fmtHours(monthMinutes(data))} this month`} />
       <div className="heat-months" style={{ gridTemplateColumns: `repeat(39, minmax(0, 1fr))` }}>
         {months.map((m) => (
           <span key={m.label + m.col} style={{ gridColumn: `${m.col + 1} / span 3` }}>
@@ -403,8 +409,8 @@ function AheadCard({ data }: { data: AllData }) {
   const prev = data.checkins.filter((c) => c.weekStart < weekStartKey()).sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1))[0];
   const goals = prev?.goals.filter((g) => g.trim()) ?? [];
   return (
-    <Card className="z-card" index={7}>
-      <CardHead title="Ahead" />
+    <Card className="z-card" index={7} tint="#e7a37c">
+      <CardHead icon={<CalendarClock size={15} strokeWidth={1.8} />} tone="ember" title="Ahead" />
       {tests.length === 0 && goals.length === 0 && <Empty text="Test dates and weekly goals appear here." />}
       {tests.length > 0 && (
         <ul className="quiet-list">

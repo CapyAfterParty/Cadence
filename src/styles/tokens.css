@@ -25,10 +25,25 @@ html {
   --text-3: rgba(236, 233, 226, 0.36);
 
   /* The one accent: muted clay. Used for "now", "today" and primary actions. */
-  --accent: #d9926a;
+  --accent: #e7a37c;
   --accent-soft: rgba(217, 146, 106, 0.12);
   --accent-ink: #1a110c;
   --focus: rgba(217, 146, 106, 0.55);
+
+  /* Soft hues: earthy, muted, but warm enough to feel alive */
+  --clay: #e7a37c;
+  --sage: #9fc8a8;
+  --mist: #9dbbdc;
+  --lavender: #b9a8e0;
+  --sand: #e6cd92;
+  --rose: #e3a4b1;
+
+  --g-clay: linear-gradient(140deg, #f2c09f, #e7a37c 55%, #d88a64);
+  --g-sage: linear-gradient(140deg, #c3e2c9, #9fc8a8 55%, #7fb08b);
+  --g-mist: linear-gradient(140deg, #c4d8ee, #9dbbdc 55%, #7f9fc6);
+  --g-lavender: linear-gradient(140deg, #d6caf2, #b9a8e0 55%, #9d89cc);
+  --g-sand: linear-gradient(140deg, #f2e2b8, #e6cd92 55%, #d4b571);
+  --g-rose: linear-gradient(140deg, #f2c6cf, #e3a4b1 55%, #cf8796);
 
   /* Quiet status colours */
   --green: #8fb996;
@@ -36,10 +51,10 @@ html {
   --red: #d38a84;
 
   /* Shape */
-  --r-xl: 1.5rem;
-  --r-card: 1.25rem;
-  --r-lg: 1rem;
-  --r-input: 0.75rem;
+  --r-xl: 2.25rem;
+  --r-card: 2rem;
+  --r-lg: 1.4rem;
+  --r-input: 1rem;
   --r-full: 999px;
 
   /* Type */
@@ -70,18 +85,21 @@ html {
   --s10: 2.5rem;
   --s12: 3rem;
   --s16: 4rem;
-  --card-pad: 1.75rem;
+  --card-pad: 2rem;
   --gap: 1.25rem;
   --sidebar: 5rem;
 
   /* Depth: barely there */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 12px 32px -16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 24px 64px -24px rgba(0, 0, 0, 0.7);
+  --shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 10px 20px -10px rgba(0, 0, 0, 0.45), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.2), 0 24px 48px -16px rgba(0, 0, 0, 0.6), 0 50px 100px -40px rgba(0, 0, 0, 0.7);
+  --hi: inset 0 1px 0 rgba(255, 248, 236, 0.07);
 
   /* Motion: slow in, gentle out. No overshoot. */
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* A soft spring: settles with the faintest give, never bounces. */
+  --soft: cubic-bezier(0.34, 1.25, 0.64, 1);
   --t-fast: 160ms;
   --t-med: 280ms;
   --t-slow: 700ms;
