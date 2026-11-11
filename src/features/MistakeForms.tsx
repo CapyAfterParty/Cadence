@@ -39,7 +39,7 @@ function QuickAddForm({ data, preset, close }: { data: AllData; preset?: Partial
   });
   const [tried, setTried] = useState(false);
   const set = (patch: Partial<typeof m>) => setM((x) => ({ ...x, ...patch }));
-  const errors = { subject: !m.subjectId ? 'Pick a subject' : '', source: !m.source.trim() ? 'Say where it came from' : '' };
+  const errors = { subject: !m.subjectId ? 'Pick a course' : '', source: !m.source.trim() ? 'Say where it came from' : '' };
 
   const save = async (again: boolean) => {
     setTried(true);
@@ -68,7 +68,7 @@ function QuickAddForm({ data, preset, close }: { data: AllData; preset?: Partial
           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) save(false);
         }}
       >
-        <Field label="Subject" error={tried ? errors.subject : ''}>
+        <Field label="Course" error={tried ? errors.subject : ''}>
           <SubjectSelect data={data} value={m.subjectId} onChange={(subjectId) => set({ subjectId, topicId: undefined })} />
         </Field>
         <Field label="From">
@@ -133,8 +133,8 @@ function QuickAddForm({ data, preset, close }: { data: AllData; preset?: Partial
 
 function NoSubjects({ close }: { close: () => void }) {
   return (
-    <Modal title="Add a subject first" onClose={close}>
-      <p className="muted">Mistakes belong to a subject. Add one in Subjects, then come back.</p>
+    <Modal title="Add a course first" onClose={close}>
+      <p className="muted">Mistakes belong to a course. Add one in Courses first.</p>
       <div className="modal-foot">
         <Button
           variant="primary"
@@ -143,7 +143,7 @@ function NoSubjects({ close }: { close: () => void }) {
             location.hash = '#/subjects';
           }}
         >
-          Go to Subjects
+          Go to Courses
         </Button>
       </div>
     </Modal>
@@ -225,7 +225,7 @@ function BulkForm({ data, initialSubject, initialPaper, close }: { data: AllData
     <Modal title={paper ? `Log mistakes · ${paperLabel(paper)}` : 'Bulk add mistakes'} onClose={close} wide>
       <div className="stack">
         <div className="grid-3">
-          <Field label="Subject">
+          <Field label="Course">
             <SubjectSelect
               data={data}
               value={subjectId}

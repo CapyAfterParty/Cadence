@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CircleAlert, FileText, ImagePlus, ListPlus, NotebookPen, Play, Plus, RotateCcw, Settings2, Target, X } from 'lucide-react';
 import { db, newRow, useData, type AllData } from '../db/db';
+import { courseTitle, splitCourse } from '../lib/course';
 import type { Note, Subject, Topic, Weakness } from '../db/types';
 import { createTopic, deleteTopic } from '../db/ops';
 import { daysBetween, fmtDay, relDays, todayKey } from '../lib/dates';
@@ -26,9 +27,9 @@ export default function SubjectHub() {
   if (!subject)
     return (
       <div className="page">
-        <Topbar title="Subject" />
+        <Topbar title="Course" />
         <Card>
-          <Empty text="This subject does not exist any more." action={<Link className="btn sm" to="/subjects">All subjects</Link>} />
+          <Empty text="This course no longer exists." action={<Link className="btn sm" to="/subjects">All courses</Link>} />
         </Card>
       </div>
     );
@@ -55,11 +56,11 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
   return (
     <div className="page">
       <Topbar
-        eyebrow="Subject"
+        eyebrow={splitCourse(subject.name).code ?? 'Course'}
         title={
           <span className="row" style={{ gap: 12 }}>
             <span className="swatch-sm" style={{ background: `linear-gradient(150deg, color-mix(in srgb, ${subject.colour} 65%, white), ${subject.colour} 55%, color-mix(in srgb, ${subject.colour} 75%, black))`, ['--c' as string]: subject.colour }} />
-            {subject.name}
+            {courseTitle(subject.name)}
             {subject.archived && <span className="pill">Archived</span>}
           </span>
         }
@@ -95,7 +96,7 @@ function Hub({ data, subject }: { data: AllData; subject: Subject }) {
           <ListPlus size={16} strokeWidth={SW} /> Bulk add
         </Button>
         <Button variant="ghost" onClick={() => openUI({ logPaper: { preset } })}>
-          <FileText size={16} strokeWidth={SW} /> Log paper
+          <FileText size={16} strokeWidth={SW} /> Log a test
         </Button>
         <Button variant="ghost" onClick={addNote}>
           <NotebookPen size={16} strokeWidth={SW} /> Add note

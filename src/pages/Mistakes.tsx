@@ -98,7 +98,7 @@ function MistakesView({ data }: { data: AllData }) {
         };
       }),
     );
-    downloadText(`cadence-anki-${today}.csv`, csv, 'text/csv');
+    downloadText(`summit-anki-${today}.csv`, csv, 'text/csv');
     toast(`Exported ${chosen.length}. Import into Anki, then tick Card made.`);
   };
 
@@ -112,7 +112,7 @@ function MistakesView({ data }: { data: AllData }) {
 
   return (
     <div className="page">
-      <Topbar eyebrow="Practice" title="Mistakes">
+      <Topbar title="Mistakes">
         <Button onClick={() => openUI({ bulk: { subjectId: subjectId || st.lastSubjectId } })}>
           <ListPlus size={16} strokeWidth={SW} /> Bulk add
         </Button>

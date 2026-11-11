@@ -5,6 +5,7 @@ import { activeSubjects, dueMistakes, subjectAverage } from '../lib/stats';
 import { settings } from '../lib/state';
 import { Card, Empty, PageSkeleton, Progress } from '../components/ui';
 import { Topbar } from '../components/Topbar';
+import { splitCourse } from '../lib/course';
 import { AddSubject } from '../components/SubjectEditor';
 
 export default function Subjects() {
@@ -16,13 +17,13 @@ export default function Subjects() {
   const today = todayKey();
   return (
     <div className="page">
-      <Topbar eyebrow="Your library" title="Subjects" />
+      <Topbar title="Courses" />
       <Card index={0}>
         <AddSubject count={data.subjects.length} />
       </Card>
       {subjects.length === 0 ? (
         <Card index={1}>
-          <Empty text="No subjects yet. Add the ones you are studying above." />
+          <Empty text="Add the courses you are taking this semester." />
         </Card>
       ) : (
         <div className="grid-3">
@@ -37,7 +38,9 @@ export default function Subjects() {
                   <div className="subject-head">
                     <span className="swatch" style={{ background: `linear-gradient(150deg, color-mix(in srgb, ${s.colour} 65%, white), ${s.colour} 55%, color-mix(in srgb, ${s.colour} 75%, black))`, ['--c' as string]: s.colour }} />
                     <div style={{ minWidth: 0 }}>
-                      <div className="subject-name">{s.name}</div>
+                      <div className="subject-name">
+                        {splitCourse(s.name).title} {splitCourse(s.name).code && <em className="code">{splitCourse(s.name).code}</em>}
+                      </div>
                       <div className="muted small">
                         {days == null ? 'No test date' : days < 0 ? 'Test date passed' : days === 0 ? 'Test today' : `Test in ${days} ${days === 1 ? 'day' : 'days'}`}
                       </div>

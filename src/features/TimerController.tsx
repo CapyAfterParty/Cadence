@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Square } from 'lucide-react';
 import { useData } from '../db/db';
+import { courseTitle } from '../lib/course';
 import { fmtClock } from '../lib/dates';
 import { openUI, timer } from '../lib/state';
 import { playDone } from '../lib/sound';
@@ -36,7 +37,7 @@ export function TimerController() {
   const secs = t ? timerSeconds(t, now) : 0;
 
   useEffect(() => {
-    document.title = t ? `${fmtClock(secs)} · ${subject?.name ?? 'Timer'} · Cadence` : 'Cadence';
+    document.title = t ? `${fmtClock(secs)} · ${subject ? courseTitle(subject.name) : 'Focus'} · Summit OS` : 'Summit OS';
   }, [t, secs, subject?.name]);
 
   useEffect(() => {

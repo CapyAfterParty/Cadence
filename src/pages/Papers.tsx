@@ -45,12 +45,12 @@ function PapersView({ data }: { data: AllData }) {
 
   return (
     <div className="page">
-      <Topbar eyebrow="Tests and trends" title="Papers">
+      <Topbar title="Tests">
         <Link to="/timer?sprint=1" className="btn">
           <Zap size={16} strokeWidth={SW} /> Timed sprint
         </Link>
         <Button variant="primary" onClick={() => openUI({ logPaper: { preset: { subjectId: subject?.id } } })}>
-          <FileText size={16} strokeWidth={SW} /> Log paper
+          <FileText size={16} strokeWidth={SW} /> Log a test
         </Button>
       </Topbar>
 
@@ -60,7 +60,7 @@ function PapersView({ data }: { data: AllData }) {
           <div className="row" style={{ gap: 12 }}>
             {timedThisWeek.length ? <CheckCircle2 size={32} strokeWidth={1.5} color="var(--green)" /> : <Circle size={32} strokeWidth={1.5} color="var(--text-2)" />}
             <div>
-              <div style={{ fontSize: 'var(--fs-17)', fontWeight: 600 }}>{timedThisWeek.length ? 'Timed paper done' : 'One timed paper this weekend'}</div>
+              <div style={{ fontSize: 'var(--fs-17)', fontWeight: 600 }}>{timedThisWeek.length ? 'Timed practice done' : 'Timed practice this weekend'}</div>
               <div className="small muted">
                 {timedThisWeek.length ? timedThisWeek.map((p) => `${paperLabel(p)} · ${Math.round(pct(p))}%`).join(', ') : 'Exam conditions, no breaks.'}
               </div>
@@ -74,9 +74,9 @@ function PapersView({ data }: { data: AllData }) {
         </Card>
 
         <Card index={1}>
-          <CardHead icon={<BarChart3 size={18} strokeWidth={SW} />} tone="orchid" title="All subjects, latest score" aside="White line marks the target" />
+          <CardHead icon={<BarChart3 size={18} strokeWidth={SW} />} tone="orchid" title="All courses, latest mark" aside="White line marks the target" />
           {subjects.length === 0 ? (
-            <Empty text="Add subjects to compare them." action={<Link to="/subjects" className="btn sm">Subjects</Link>} />
+            <Empty text="Add courses to compare them." action={<Link to="/subjects" className="btn sm">Courses</Link>} />
           ) : (
             subjects.map((s) => {
               const ps = subjectPapers(data, s.id);
@@ -147,7 +147,7 @@ function PapersView({ data }: { data: AllData }) {
                             <td style={{ fontWeight: 500 }}>
                               {paperLabel(p)} {p.timed && <span className="pill accent" style={{ marginLeft: 6 }}>Timed</span>}
                             </td>
-                            <td className="muted">{p.kind === 'past_paper' ? 'Past paper' : `Topic test${topic ? ` · ${topic}` : ''}`}</td>
+                            <td className="muted">{p.kind === 'past_paper' ? 'Practice exam' : `Unit test${topic ? ` · ${topic}` : ''}`}</td>
                             <td className="right num">
                               {p.score}/{p.maxScore}
                             </td>
@@ -157,7 +157,7 @@ function PapersView({ data }: { data: AllData }) {
                             <td className="right num muted">{p.minutesTaken ? `${p.minutesTaken}m` : '–'}</td>
                             <td className="muted">{mistakeCount(p.id) || '–'}</td>
                             <td className="right" onClick={(e) => e.stopPropagation()}>
-                              <Button icon size="sm" variant="ghost" aria-label="Delete paper" onClick={() => deletePaper(p.id)}>
+                              <Button icon size="sm" variant="ghost" aria-label="Delete test" onClick={() => deletePaper(p.id)}>
                                 <Trash2 size={14} strokeWidth={SW} />
                               </Button>
                             </td>
@@ -167,7 +167,7 @@ function PapersView({ data }: { data: AllData }) {
                               <td colSpan={8}>
                                 <div className="stack" style={{ padding: '8px 0' }} onClick={(e) => e.stopPropagation()}>
                                   <div className="row">
-                                    <ScanUploadButton ownerType="paper" ownerId={p.id} size="sm" label="Upload marked paper" />
+                                    <ScanUploadButton ownerType="paper" ownerId={p.id} size="sm" label="Upload marked test" />
                                     <Button size="sm" onClick={() => openUI({ bulk: { subjectId: p.subjectId, paperId: p.id } })}>
                                       <ListPlus size={14} strokeWidth={SW} /> Log mistakes
                                     </Button>
@@ -177,7 +177,7 @@ function PapersView({ data }: { data: AllData }) {
                                       </Link>
                                     )}
                                   </div>
-                                  <ScanGrid ownerType="paper" ownerId={p.id} emptyText="No scans of this paper yet." />
+                                  <ScanGrid ownerType="paper" ownerId={p.id} emptyText="No scans yet." />
                                 </div>
                               </td>
                             </tr>

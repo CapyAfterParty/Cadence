@@ -6,11 +6,10 @@ import { exportBackup, importBackup } from '../lib/backup';
 import { settings, toast } from '../lib/state';
 import { checkPassword, getVerifier, lockNow, passwordStrength, security, setPassword, siteKey } from '../lib/security';
 import { Button, Card, IconTile, PageSkeleton, Segmented, cx, type Tone } from '../components/ui';
-import { AutoInput } from '../components/auto';
 import { Topbar } from '../components/Topbar';
-import { AddSubject, SubjectEditor } from '../components/SubjectEditor';
 import { useScans } from '../components/Scans';
 import { Enso, Wordmark } from '../components/Logo';
+import { OWNER } from '../owner';
 
 const SW = 1.7;
 
@@ -19,7 +18,7 @@ const SECTIONS: { id: string; label: string; tone: Tone; icon: ReactNode }[] = [
   { id: 'security', label: 'Security', tone: 'meadow', icon: <ShieldCheck size={15} strokeWidth={SW} /> },
   { id: 'study', label: 'Study rhythm', tone: 'orchid', icon: <SlidersHorizontal size={15} strokeWidth={SW} /> },
   { id: 'appearance', label: 'Appearance', tone: 'coral', icon: <ImageIcon size={15} strokeWidth={SW} /> },
-  { id: 'subjects', label: 'Subjects', tone: 'lagoon', icon: <BookOpen size={15} strokeWidth={SW} /> },
+  { id: 'subjects', label: 'Courses', tone: 'lagoon', icon: <BookOpen size={15} strokeWidth={SW} /> },
   { id: 'data', label: 'Data & backup', tone: 'gold', icon: <Database size={15} strokeWidth={SW} /> },
   { id: 'about', label: 'About', tone: 'orchid', icon: <Info size={15} strokeWidth={SW} /> },
 ];
@@ -54,39 +53,11 @@ function Section({ id, title, desc, children, index, tint }: { id: string; title
 
 export default function SettingsPage() {
   const data = useData();
-  const [active, setActive] = useState('profile');
-  useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (vis) setActive(vis.target.id.replace('s-', ''));
-      },
-      { rootMargin: '-20% 0px -60% 0px' },
-    );
-    document.querySelectorAll('.s-section').forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, [data == null]);
   if (!data) return <PageSkeleton />;
   return (
     <div className="page">
-      <Topbar eyebrow="Preferences" title={<>Settings</>} />
-      <div className="settings-layout">
-        <nav className="s-nav" aria-label="Settings sections">
-          {SECTIONS.map((s) => (
-            <a
-              key={s.id}
-              href={`#/settings`}
-              className={cx(active === s.id && 'on')}
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById(`s-${s.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            >
-              <IconTile tone={s.tone}>{s.icon}</IconTile>
-              {s.label}
-            </a>
-          ))}
-        </nav>
+      <Topbar title="Settings" />
+      <div className="settings-layout single">
         <div className="s-main">
           <Profile data={data} />
           <SecuritySection />
@@ -102,17 +73,14 @@ export default function SettingsPage() {
 }
 
 function Profile({ data }: { data: AllData }) {
-  const st = settings.use();
-  const initials = st.name.trim().split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-  const since = data.subjects.length ? new Date(Math.min(...data.subjects.map((s) => s.createdAt))) : null;
+  const courses = data.subjects.filter((s) => !s.archived).length;
   return (
-    <Card className="s-section s-hero" index={0} tint="ember" id="s-profile">
-      <span className="s-avatar">{initials || '·'}</span>
-      <div className="stack" style={{ gap: '0.6rem', flex: 1, minWidth: 0 }}>
-        <span className="eyebrow">{since ? `Studying with Cadence since ${since.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}` : 'Welcome'}</span>
-        <AutoInput className="title-input" value={st.name} onSave={(name) => settings.set((s) => ({ ...s, name: name.trim() }))} placeholder="Your name" aria-label="Your name" />
+    <Card className="s-section s-hero" index={0} tint="#b9a8e0" id="s-profile">
+      <span className="s-avatar">{OWNER.name[0]}</span>
+      <div className="stack" style={{ gap: '0.35rem', flex: 1, minWidth: 0 }}>
+        <h2 className="s-name">{OWNER.name}</h2>
         <span className="muted small">
-          {data.subjects.filter((s) => !s.archived).length} subjects · {data.papers.length} papers · {data.mistakes.length} mistakes logged
+          {OWNER.curriculum} curriculum · {courses} {courses === 1 ? 'course' : 'courses'} · {data.papers.length} tests · {data.mistakes.length} mistakes
         </span>
       </div>
     </Card>
@@ -140,7 +108,7 @@ function SecuritySection() {
     toast('Password changed');
   };
   return (
-    <Section id="security" title="Security" desc="Cadence is locked with your password. It is hashed on this device and never stored or sent anywhere." index={1}>
+    <Section id="security" title="Security" desc="Your password is hashed on this device. It is never stored or sent anywhere." index={1}>
       <div className="s-rows">
         <Row title="Lock automatically" desc="After this long without activity. Never during a timed paper.">
           <Segmented
@@ -157,7 +125,7 @@ function SecuritySection() {
         </Row>
         <Row title="Lock now" desc={<>Or press <kbd className="k">⇧</kbd> <kbd className="k">⌘</kbd> <kbd className="k">L</kbd> anywhere.</>}>
           <Button onClick={lockNow}>
-            <Lock size={15} strokeWidth={SW} /> Lock Cadence
+            <Lock size={15} strokeWidth={SW} /> Lock
           </Button>
         </Row>
         <Row title="Change password" desc="You will need your current one.">
@@ -191,7 +159,7 @@ function SecuritySection() {
             </div>
           </form>
         </Row>
-        <Row title="Site password" desc="Stops strangers on a fresh browser from even starting setup. Set it when you deploy (see README).">
+        <Row title="Site password" desc="If Summit OS is online, this stops anyone else from setting it up in their browser. See the README.">
           <span className={cx('pill', siteKey() ? 'green' : '')}>{siteKey() ? 'On for this build' : 'Not set'}</span>
         </Row>
       </div>
@@ -272,38 +240,38 @@ function SubjectsSection({ data }: { data: AllData }) {
   const active = data.subjects.filter((s) => !s.archived);
   const archived = data.subjects.filter((s) => s.archived);
   return (
-    <Section id="subjects" title="Subjects" desc="Everything saves as you type." index={4}>
-      <div className="stack" style={{ marginTop: '1.25rem' }}>
-        <AddSubject count={data.subjects.length} />
-        <div>
-          {active.map((s) => (
-            <div key={s.id} className="subject-block">
-              <SubjectEditor subject={s} />
-              <div className="row" style={{ marginTop: '0.85rem', justifyContent: 'flex-end' }}>
-                <Button size="sm" variant="ghost" onClick={() => db.subjects.update(s.id, { archived: true })}>
-                  <Archive size={14} strokeWidth={SW} /> Archive
-                </Button>
-              </div>
+    <Section id="subjects" title="Courses" desc="Rename, recolour and set targets on each course's page. Archive finished courses here." index={4}>
+      <div className="s-rows">
+        {active.map((s) => (
+          <div key={s.id} className="s-row">
+            <div className="s-label row" style={{ gap: '0.6rem', flexWrap: 'nowrap' }}>
+              <span className="subject-dot" style={{ background: s.colour }} />
+              <strong>{s.name}</strong>
             </div>
-          ))}
-        </div>
-        {archived.length > 0 && (
-          <div>
-            <span className="eyebrow">Archived</span>
-            {archived.map((s) => (
-              <div key={s.id} className="list-item">
-                <span className="subject-dot" style={{ background: s.colour, color: s.colour }} />
-                <span className="grow">{s.name}</span>
-                <Button size="sm" onClick={() => db.subjects.update(s.id, { archived: false })}>
-                  <ArchiveRestore size={14} strokeWidth={SW} /> Restore
-                </Button>
-                <Button size="sm" variant="ghost" className="danger" onClick={() => deleteSubject(s.id)}>
-                  <Trash2 size={14} strokeWidth={SW} /> Delete
-                </Button>
-              </div>
-            ))}
+            <div className="s-control">
+              <Button size="sm" variant="ghost" onClick={() => db.subjects.update(s.id, { archived: true })}>
+                <Archive size={14} strokeWidth={SW} /> Archive
+              </Button>
+            </div>
           </div>
-        )}
+        ))}
+        {archived.map((s) => (
+          <div key={s.id} className="s-row">
+            <div className="s-label row" style={{ gap: '0.6rem', flexWrap: 'nowrap' }}>
+              <span className="subject-dot" style={{ background: s.colour, opacity: 0.5 }} />
+              <strong className="muted">{s.name}</strong>
+              <span className="pill">Archived</span>
+            </div>
+            <div className="s-control">
+              <Button size="sm" onClick={() => db.subjects.update(s.id, { archived: false })}>
+                <ArchiveRestore size={14} strokeWidth={SW} /> Restore
+              </Button>
+              <Button size="sm" variant="ghost" className="danger" onClick={() => deleteSubject(s.id)}>
+                <Trash2 size={14} strokeWidth={SW} /> Delete
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
     </Section>
   );
@@ -341,7 +309,7 @@ function DataSection({ data }: { data: AllData }) {
               const f = e.target.files?.[0];
               e.target.value = '';
               if (!f) return;
-              if (!confirm('Importing replaces everything in Cadence with this backup. Continue?')) return;
+              if (!confirm('This replaces everything in Summit OS with the backup. Continue?')) return;
               try {
                 await importBackup(f);
                 toast('Backup restored');
@@ -374,13 +342,10 @@ function AboutSection() {
   return (
     <Section id="about" title="About" index={6}>
       <div className="s-about">
-        <Enso size="7rem" />
-        <div className="stack" style={{ gap: '0.6rem' }}>
-          <Wordmark size="var(--fs-44)" />
-          <p className="muted" style={{ maxWidth: '30rem' }}>
-            A study system that runs in rhythm: flashcards every day, one timed paper every weekend, every mistake redone until it is fixed, and a Sunday check-in to close the loop.
-          </p>
-          <span className="eyebrow">Version 1.0 · Local-first · No accounts, no tracking</span>
+        <Enso size="5.5rem" />
+        <div className="stack" style={{ gap: '0.5rem' }}>
+          <Wordmark size="var(--fs-32)" />
+          <span className="muted small">Built for {OWNER.name}. Everything stays on this device.</span>
         </div>
       </div>
     </Section>

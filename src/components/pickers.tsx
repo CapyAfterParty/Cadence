@@ -22,8 +22,8 @@ export function SubjectSelect({
   const subjects = data.subjects.filter((s) => !s.archived || s.id === value);
   return (
     <select id={id} className={cx('select', size)} value={value} onChange={(e) => onChange(e.target.value)}>
-      {includeAll && <option value="">All subjects</option>}
-      {!includeAll && !value && <option value="">Pick a subject</option>}
+      {includeAll && <option value="">All courses</option>}
+      {!includeAll && !value && <option value="">Pick a course</option>}
       {subjects.map((s) => (
         <option key={s.id} value={s.id}>
           {s.name}

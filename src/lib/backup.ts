@@ -23,16 +23,16 @@ export async function exportBackup() {
         : rows;
   }
   const { lastBackupAt: _ignored, ...rest } = settings.get();
-  const payload = { app: 'cadence', version: 1, exportedAt: new Date().toISOString(), settings: rest, tables };
-  downloadText(`cadence-backup-${todayKey()}.json`, JSON.stringify(payload), 'application/json');
+  const payload = { app: 'summit', version: 1, exportedAt: new Date().toISOString(), settings: rest, tables };
+  downloadText(`summit-backup-${todayKey()}.json`, JSON.stringify(payload), 'application/json');
   settings.set((s) => ({ ...s, lastBackupAt: Date.now() }));
 }
 
 /** Replaces everything with the backup's contents. */
 export async function importBackup(file: File) {
   const payload = JSON.parse(await file.text());
-  if (payload?.app !== 'cadence' || typeof payload.tables !== 'object') {
-    throw new Error('This file is not a Cadence backup.');
+  if (!['cadence', 'summit'].includes(payload?.app) || typeof payload.tables !== 'object') {
+    throw new Error('This file is not a Summit OS backup.');
   }
   const prepared: Record<string, unknown[]> = {};
   for (const name of TABLES) {

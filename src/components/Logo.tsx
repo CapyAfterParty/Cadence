@@ -1,7 +1,7 @@
 import { useId, useMemo } from 'react';
 
 /**
- * The Cadence mark: an ensō, the single brushstroke circle of Zen.
+ * The Summit OS mark: an ensō, the single brushstroke circle of Zen.
  * Open, imperfect, and it is the weekly loop.
  * The shape is generated as a tapered stroke so it reads like ink.
  */
@@ -65,7 +65,7 @@ export function Enso({ size = '9rem' }: { size?: string }) {
 export function Wordmark({ size = '1.1rem' }: { size?: string }) {
   return (
     <span className="wordmark" style={{ fontSize: size }}>
-      cadence
+      Summit<span className="os">OS</span>
     </span>
   );
 }

@@ -50,17 +50,17 @@ function commands(nav: NavigateFunction): Item[] {
     a('bulk', 'Bulk add mistakes', I(ListPlus), () => openUI({ bulk: { subjectId: last() } })),
     a('start-timer', 'Start timer', I(Play), () => (last() ? startStudy(last()!) : nav('/timer'))),
     a('sprint', 'Start timed sprint', I(Zap), () => nav('/timer?sprint=1')),
-    a('log-paper', 'Log paper', I(FileText), () => openUI({ logPaper: { preset: { subjectId: last() } } })),
+    a('log-paper', 'Log a test', I(FileText), () => openUI({ logPaper: { preset: { subjectId: last() } } })),
     a('log-flash', 'Log flashcards', I(Layers), () => openUI({ flashLog: true })),
     a('redo', 'Start redo', I(RotateCcw), () => nav(last() ? `/redo?subject=${last()}` : '/redo')),
     a('export', 'Export backup', I(Download), () => exportBackup()),
-    a('lock', 'Lock Cadence', I(Lock), () => lockNow(), '⇧⌘L'),
-    s('/', 'Home', I(House)),
-    s('/subjects', 'Subjects', I(BookOpen)),
+    a('lock', 'Lock Summit OS', I(Lock), () => lockNow(), '⇧⌘L'),
+    s('/', 'Today', I(House)),
+    s('/subjects', 'Courses', I(BookOpen)),
     s('/mistakes', 'Mistakes', I(CircleAlert)),
-    s('/papers', 'Papers', I(FileText)),
-    s('/timer', 'Timer', I(Timer)),
-    s('/checkin', 'Weekly check-in', I(CalendarCheck)),
+    s('/papers', 'Tests', I(FileText)),
+    s('/timer', 'Focus', I(Timer)),
+    s('/checkin', 'Review', I(CalendarCheck)),
     s('/settings', 'Settings', I(Settings)),
   ];
 }
@@ -77,7 +77,7 @@ function search(data: AllData, q: string, nav: NavigateFunction): Item[] {
   const topicName = new Map(data.topics.map((t) => [t.id, t.name]));
   const subjects: Item[] = activeSubjects(data).map((s) => ({
     key: 's' + s.id,
-    group: 'Subjects',
+    group: 'Courses',
     label: s.name,
     icon: <span className="subject-dot" style={{ background: s.colour }} />,
     run: () => nav(`/subjects/${s.id}`),

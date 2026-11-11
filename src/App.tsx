@@ -11,7 +11,8 @@ import { TimerController } from './features/TimerController';
 import { LockScreen, Onboarding } from './features/Gate';
 import { anyModalOpen, dismissToast, openUI, settings, timer, toasts, ui } from './lib/state';
 import { boot, lockNow, lockState, markActive, security } from './lib/security';
-import Dashboard from './pages/Dashboard';
+import Today from './pages/Today';
+import Progress from './pages/Progress';
 import Subjects from './pages/Subjects';
 import SubjectHub from './pages/SubjectHub';
 import NotePage from './pages/NotePage';
@@ -123,7 +124,8 @@ function AppShell() {
         <Sidebar />
         <main className="main">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Today />} />
+            <Route path="/progress" element={<Progress />} />
             <Route path="/subjects" element={<Subjects />} />
             <Route path="/subjects/:id" element={<SubjectHub />} />
             <Route path="/notes/:id" element={<NotePage />} />
@@ -133,7 +135,7 @@ function AppShell() {
             <Route path="/timer" element={<TimerPage />} />
             <Route path="/checkin" element={<Checkin />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="*" element={<Dashboard />} />
+            <Route path="*" element={<Today />} />
           </Routes>
         </main>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
+import { courseTitle } from '../lib/course';
 import type { ID, Mistake } from '../db/types';
 import { recordAttempt } from '../db/ops';
 import { relDays } from '../lib/dates';
@@ -28,11 +29,11 @@ function PickSubject({ data }: { data: AllData }) {
   const subjects = activeSubjects(data);
   return (
     <div className="page">
-      <Topbar eyebrow="Practice" title="Redo" />
+      <Topbar eyebrow="Mistakes" title="Redo" />
       <Card>
-        <h2 style={{ fontSize: 'var(--fs-17)', fontWeight: 600, marginBottom: 16 }}>Pick a subject</h2>
+        <h2 style={{ fontSize: 'var(--fs-17)', fontWeight: 600, marginBottom: 16 }}>Pick a course</h2>
         {subjects.length === 0 ? (
-          <Empty text="Add a subject first." action={<Link to="/subjects" className="btn sm">Subjects</Link>} />
+          <Empty text="Add a course first." action={<Link to="/subjects" className="btn sm">Courses</Link>} />
         ) : (
           <div className="list">
             {subjects.map((s) => {
@@ -73,7 +74,7 @@ function Setup({ data, subjectId, topicParam }: { data: AllData; subjectId: ID; 
 
   return (
     <div className="page">
-      <Topbar eyebrow="Practice" title={`Redo · ${subject.name}`}>
+      <Topbar eyebrow="Mistakes" title={`Redo · ${courseTitle(subject.name)}`}>
         <Link to="/redo" className="btn">
           Change subject
         </Link>

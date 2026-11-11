@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, CalendarClock, CalendarDays, Check, CircleAlert, FileText, Layers, Repeat, Target, Timer } from 'lucide-react';
+import { ArrowRight, CalendarDays, Check, CircleAlert, FileText, Layers, Repeat, Target, Timer } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import type { Subject } from '../db/types';
-import { addDays, daysBetween, fmtDay, fmtHours, greeting, inWeek, isSunday, lastNDays, parseDay, todayKey, weekStartKey, weekdayLetter } from '../lib/dates';
+import { addDays, daysBetween, fmtDay, fmtHours, inWeek, isSunday, lastNDays, parseDay, todayKey, weekStartKey, weekdayLetter } from '../lib/dates';
 import {
   activeSubjects,
   cardsByDay,
   dueMistakes,
   flashStreak,
-  isCheckinDone,
+
   loopScore,
   minutesByDay,
   monthMinutes,
@@ -23,15 +23,14 @@ import { openUI, settings } from '../lib/state';
 import { Heatmap } from '../components/charts/charts';
 import { Arc, Bars, LoopRing, MultiLine, Spark } from '../components/charts/fancy';
 import { Card, CardHead, CountUp, Empty, Skeleton, cx } from '../components/ui';
-import { SearchTrigger } from '../features/Search';
-import { RunningPill } from '../features/TimerController';
+import { Topbar } from '../components/Topbar';
+import { courseTitle } from '../lib/course';
 
-export default function Dashboard() {
+export default function Progress() {
   const data = useData();
-  const s = settings.use();
   return (
-    <div className="page home">
-      <Header data={data} name={s.name} />
+    <div className="page">
+      <Topbar title="Progress" />
       {data ? <Body data={data} /> : <GridSkeleton />}
     </div>
   );
@@ -47,124 +46,21 @@ function GridSkeleton() {
   );
 }
 
-/* ---------- Header: the date, a greeting, one line on what matters ---------- */
-
-function brief(data: AllData, redoDays: number) {
-  const today = todayKey();
-  const due = dueMistakes(data, redoDays, today).length;
-  const cards = cardsByDay(data).get(today) ?? 0;
-  const soon = activeSubjects(data)
-    .filter((s) => s.nextTestDate && daysBetween(today, s.nextTestDate) >= 0)
-    .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1))[0];
-  const bits: string[] = [];
-  if (!cards) bits.push('flashcards are still to do');
-  if (due) bits.push(`${due} ${due === 1 ? 'mistake waits' : 'mistakes wait'} for a redo`);
-  if (soon) {
-    const d = daysBetween(today, soon.nextTestDate!);
-    bits.push(`${soon.name} is ${d === 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`}`);
-  }
-  if (!bits.length) return 'Nothing pressing today.';
-  const s = bits.length === 1 ? bits[0] : `${bits.slice(0, -1).join(', ')}, and ${bits[bits.length - 1]}`;
-  return s[0].toUpperCase() + s.slice(1) + '.';
-}
-
-function Header({ data, name }: { data?: AllData; name: string }) {
-  const st = settings.use();
-  const today = todayKey();
-  const first = name.split(' ')[0];
-  return (
-    <header className="home-head">
-      <div className="hh-left">
-        <span className="eyebrow">{parseDay(today).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-        <h1 className="hh-title">
-          {greeting()}
-          {first ? (
-            <>
-              , <span className="serif">{first}</span>.
-            </>
-          ) : (
-            '.'
-          )}
-        </h1>
-        <p className="hh-brief">{data ? brief(data, st.redoDays) : ' '}</p>
-      </div>
-      <div className="hh-right">
-        <RunningPill />
-        <SearchTrigger />
-      </div>
-      {data && <Today data={data} />}
-    </header>
-  );
-}
-
-/** What to do now, as a quiet line of actions. */
-function Today({ data }: { data: AllData }) {
-  const nav = useNavigate();
-  const st = settings.use();
-  const today = todayKey();
-  const subjects = activeSubjects(data);
-  if (!subjects.length)
-    return (
-      <nav className="today">
-        <button type="button" onClick={() => nav('/subjects')}>
-          <i /> Add your first subject
-        </button>
-      </nav>
-    );
-  const cardsToday = cardsByDay(data).get(today) ?? 0;
-  const due = dueMistakes(data, st.redoDays, today).length;
-  const timedDone = data.papers.some((p) => p.timed && inWeek(p.date, weekStartKey(today)));
-  const last = subjects.find((s) => s.id === st.lastSubjectId) ?? subjects[0];
-  const items = [
-    { done: cardsToday > 0, label: cardsToday > 0 ? `${cardsToday} cards today` : 'Flashcards', run: () => openUI({ flashLog: true }) },
-    { done: due === 0, label: due ? `Redo ${due} ${due === 1 ? 'mistake' : 'mistakes'}` : 'Redo queue clear', run: () => nav(`/redo?subject=${last.id}`) },
-    { done: timedDone, label: timedDone ? 'Timed paper done' : 'Timed paper this weekend', run: () => nav(timedDone ? '/papers' : '/timer?sprint=1') },
-  ];
-  return (
-    <nav className="today" aria-label="Today">
-      {items.map((it) => (
-        <button key={it.label} type="button" className={it.done ? 'done' : undefined} onClick={it.run}>
-          {it.done ? <Check size={13} strokeWidth={2} /> : <i />}
-          {it.label}
-        </button>
-      ))}
-    </nav>
-  );
-}
-
-/* ---------- Body ---------- */
-
 function Body({ data }: { data: AllData }) {
   const st = settings.use();
   const subjects = activeSubjects(data);
   const [chosenId, setChosenId] = useState(st.lastSubjectId ?? '');
   const subject = subjects.find((s) => s.id === chosenId) ?? subjects[0];
-  const today = todayKey();
-  const checkinDone = isCheckinDone(data.checkins.find((c) => c.weekStart === weekStartKey(today)));
-
   return (
-    <>
-      {isSunday(today) && !checkinDone && (
-        <div className="banner">
-          <span>
-            <strong>It’s Sunday.</strong> Your weekly check-in is ready, with the week already filled in.
-          </span>
-          <Link to="/checkin" className="btn sm">
-            Open check-in <ArrowRight size={13} strokeWidth={1.8} />
-          </Link>
-        </div>
-      )}
-      <div className="zen-grid">
-        <LoopCard data={data} redoDays={st.redoDays} />
-        <StudyCard data={data} />
-        <FlashCard data={data} />
-        <MistakesCard data={data} redoDays={st.redoDays} />
-        <PapersCard data={data} subject={subject} onPick={setChosenId} />
-        <TargetCard data={data} subject={subject} onPick={setChosenId} />
-        <CalendarCard data={data} />
-        <AheadCard data={data} />
-      </div>
-    </>
+    <div className="zen-grid">
+      <LoopCard data={data} redoDays={st.redoDays} />
+      <StudyCard data={data} />
+      <FlashCard data={data} />
+      <MistakesCard data={data} redoDays={st.redoDays} />
+      <PapersCard data={data} subject={subject} onPick={setChosenId} />
+      <TargetCard data={data} subject={subject} onPick={setChosenId} />
+      <CalendarCard data={data} />
+    </div>
   );
 }
 
@@ -186,7 +82,7 @@ function LoopCard({ data, redoDays }: { data: AllData; redoDays: number }) {
   const [flash, paper, redo, check] = current.parts;
   const rows = [
     { label: 'Flashcards', value: flash.value, status: `${Math.round(flash.value * 7)}/7 days`, hue: LOOP_HUES[0] },
-    { label: 'Timed paper', value: paper.value, status: paper.value >= 1 ? 'Done' : 'Not yet', hue: LOOP_HUES[1] },
+    { label: 'Timed practice', value: paper.value, status: paper.value >= 1 ? 'Done' : 'Not yet', hue: LOOP_HUES[1] },
     { label: 'Mistakes redone', value: redo.value, status: `${Math.round(redo.value * 100)}%`, hue: LOOP_HUES[2] },
     { label: 'Check-in', value: check.value, status: check.value >= 1 ? 'Done' : isSunday(today) ? 'Today' : 'Sunday', hue: LOOP_HUES[3] },
   ];
@@ -198,7 +94,7 @@ function LoopCard({ data, redoDays }: { data: AllData; redoDays: number }) {
           <span className="loop-score num">
             <CountUp value={current.score} />
           </span>
-          <span className="loop-caption">of the loop</span>
+          <span className="loop-caption">this week</span>
         </LoopRing>
       </div>
       <ul className="quiet-list">
@@ -231,7 +127,7 @@ function StudyCard({ data }: { data: AllData }) {
         <span className="u">h</span> <CountUp value={m} />
         <span className="u">m</span>
       </Big>
-      <p className="caption">{studyStreak(data)}-day streak</p>
+      <p className="caption">Streak {studyStreak(data)} days</p>
       <div className="chart">
         <Bars values={days.map((d) => mins.get(d) ?? 0)} labels={days.map(weekdayLetter)} format={fmtHours} hue="sand" />
       </div>
@@ -258,7 +154,7 @@ function FlashCard({ data }: { data: AllData }) {
       <Big unit="today">
         <CountUp value={today} />
       </Big>
-      <p className="caption">{flashStreak(data)}-day streak · dashed line is last week</p>
+      <p className="caption">Streak {flashStreak(data)} days</p>
       <div className="chart">
         <Spark values={days.map((d) => cards.get(d) ?? 0)} compare={days.map((d) => cards.get(addDays(d, -7)) ?? 0)} labels={days.map(weekdayLetter)} />
       </div>
@@ -280,7 +176,7 @@ function MistakesCard({ data, redoDays }: { data: AllData; redoDays: number }) {
       <Big unit="due">
         <CountUp value={due} />
       </Big>
-      <p className="caption">Not redone in {redoDays} days</p>
+      <p className="caption">Due for redo</p>
       <ul className="quiet-list push">
         <li>
           <span className="q-label">Redone, 7 days</span>
@@ -307,7 +203,7 @@ function SubjectTabs({ data, value, onPick }: { data: AllData; value?: string; o
     <div className="tabs">
       {activeSubjects(data).map((s) => (
         <button key={s.id} type="button" className={s.id === value ? 'on' : undefined} onClick={() => onPick(s.id)}>
-          {s.name}
+          {courseTitle(s.name)}
         </button>
       ))}
     </div>
@@ -328,14 +224,14 @@ function PapersCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const papers = subject ? subjectPapers(data, subject.id) : [];
   return (
     <Card className="z-card" index={4} tint="#9dbbdc">
-      <CardHead icon={<FileText size={15} strokeWidth={1.8} />} tone="lagoon" title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Papers</Link>} aside="10 weeks" />
+      <CardHead icon={<FileText size={15} strokeWidth={1.8} />} tone="lagoon" title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Tests</Link>} aside="10 weeks" />
       {!data.papers.length ? (
         <Empty text="Log a paper to see the trend." action={<button type="button" className="btn sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject?.id } } })}>Log a paper</button>} />
       ) : (
         <>
           <Big unit="%">{avg == null ? '–' : <CountUp value={Math.round(avg)} />}</Big>
           <p className="caption">
-            {subject?.name}, last three · {papers.length} logged
+            {subject ? courseTitle(subject.name) : ''}, last three · {papers.length} logged
           </p>
           <div className="chart">
             <MultiLine series={series} labels={weeks.map((w) => fmtDay(w, { day: 'numeric', month: 'short' }))} target={subject?.targetPct} focus={subject?.id} />
@@ -353,7 +249,7 @@ function TargetCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const days = subject?.nextTestDate ? daysBetween(today, subject.nextTestDate) : null;
   return (
     <Card className="z-card" index={5} tint="#9fc8a8">
-      <CardHead icon={<Target size={15} strokeWidth={1.8} />} tone="meadow" title="Target" aside={subject?.name} />
+      <CardHead icon={<Target size={15} strokeWidth={1.8} />} tone="meadow" title="Target" aside={subject ? courseTitle(subject.name) : undefined} />
       {subject ? (
         <>
           <div className="arc-wrap">
@@ -369,7 +265,7 @@ function TargetCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
           <SubjectTabs data={data} value={subject.id} onPick={onPick} />
         </>
       ) : (
-        <Empty text="Add a subject to set a target." action={<Link className="btn sm" to="/subjects">Add subject</Link>} />
+        <Empty text="Add a course to set a target." action={<Link className="btn sm" to="/subjects">Add course</Link>} />
       )}
     </Card>
   );
@@ -387,7 +283,7 @@ function CalendarCard({ data }: { data: AllData }) {
     }
   });
   return (
-    <Card className="z-card wide" index={6} tint="#9fc8a8">
+    <Card className="z-card full" index={6} tint="#9fc8a8">
       <CardHead icon={<CalendarDays size={15} strokeWidth={1.8} />} tone="meadow" title="Study calendar" aside={`${fmtHours(monthMinutes(data))} this month`} />
       <div className="heat-months" style={{ gridTemplateColumns: `repeat(39, minmax(0, 1fr))` }}>
         {months.map((m) => (
@@ -400,47 +296,3 @@ function CalendarCard({ data }: { data: AllData }) {
     </Card>
   );
 }
-
-function AheadCard({ data }: { data: AllData }) {
-  const today = todayKey();
-  const tests = activeSubjects(data)
-    .filter((s) => s.nextTestDate && s.nextTestDate >= today)
-    .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1));
-  const prev = data.checkins.filter((c) => c.weekStart < weekStartKey()).sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1))[0];
-  const goals = prev?.goals.filter((g) => g.trim()) ?? [];
-  return (
-    <Card className="z-card" index={7} tint="#e7a37c">
-      <CardHead icon={<CalendarClock size={15} strokeWidth={1.8} />} tone="ember" title="Ahead" />
-      {tests.length === 0 && goals.length === 0 && <Empty text="Test dates and weekly goals appear here." />}
-      {tests.length > 0 && (
-        <ul className="quiet-list">
-          {tests.map((s) => {
-            const d = daysBetween(today, s.nextTestDate!);
-            return (
-              <li key={s.id}>
-                <Link to={`/subjects/${s.id}`} className="q-label">
-                  {s.name} test
-                </Link>
-                <span className={cx('q-value num', d <= 7 && 'soon')}>{d === 0 ? 'today' : `${d} days`}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-      {goals.length > 0 && (
-        <>
-          <span className="eyebrow goals-title">This week’s goals</span>
-          <ol className="goals">
-            {goals.map((g, i) => (
-              <li key={i}>
-                <span className="g-num serif">{i + 1}</span>
-                <span>{g}</span>
-              </li>
-            ))}
-          </ol>
-        </>
-      )}
-    </Card>
-  );
-}
-

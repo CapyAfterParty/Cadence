@@ -80,7 +80,7 @@ export function AddSubject({ count }: { count: number }) {
         add();
       }}
     >
-      <input className="input" placeholder="New subject, e.g. Chemistry" value={name} onChange={(e) => setName(e.target.value)} aria-label="New subject name" />
+      <input className="input" placeholder="New course, e.g. SPH4U Physics" value={name} onChange={(e) => setName(e.target.value)} aria-label="New course name" />
       <Button type="submit" variant="primary" disabled={!name.trim()}>
         <Plus size={16} strokeWidth={1.5} /> Add
       </Button>

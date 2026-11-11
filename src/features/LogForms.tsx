@@ -42,7 +42,7 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
   const score = numOrNaN(f.score);
   const max = numOrNaN(f.maxScore);
   const errors = {
-    subject: f.subjectId ? '' : 'Pick a subject',
+    subject: f.subjectId ? '' : 'Pick a course',
     name: f.name.trim() ? '' : 'Give it a name',
     score: isNaN(score) || score < 0 ? 'Enter the score' : '',
     max: isNaN(max) || max <= 0 ? 'Enter the max score' : !isNaN(score) && score > max ? 'Score is above max' : '',
@@ -71,7 +71,7 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
 
   if (saved)
     return (
-      <Modal title="Paper saved" onClose={close}>
+      <Modal title="Saved" onClose={close}>
         <div className="stack">
           <div className="row" style={{ gap: 12 }}>
             <CheckCircle2 size={28} strokeWidth={1.5} color="var(--green)" />
@@ -84,7 +84,7 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
           </div>
           <div className="banner">
             <span>
-              <strong>Log your mistakes now.</strong> It takes a minute while the paper is fresh.
+              <strong>Log the mistakes now,</strong> while it's fresh.
             </span>
           </div>
           <ScanGrid ownerType="paper" ownerId={saved.id} emptyText="Add scans of the marked paper." />
@@ -101,13 +101,13 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
 
   if (!firstSubject)
     return (
-      <Modal title="Add a subject first" onClose={close}>
-        <p className="muted">Papers belong to a subject. Add one in Subjects first.</p>
+      <Modal title="Add a course first" onClose={close}>
+        <p className="muted">Tests belong to a course. Add one in Courses first.</p>
       </Modal>
     );
 
   return (
-    <Modal title={preset?.timed ? 'Time is up. Log the paper' : 'Log paper'} onClose={close}>
+    <Modal title={preset?.timed ? 'Time. Log the result' : 'Log a test'} onClose={close}>
       <form
         className="form-grid"
         onSubmit={(e) => {
@@ -115,7 +115,7 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
           save();
         }}
       >
-        <Field label="Subject" error={tried ? errors.subject : ''}>
+        <Field label="Course" error={tried ? errors.subject : ''}>
           <SubjectSelect data={data} value={f.subjectId} onChange={(subjectId) => set({ subjectId, topicId: undefined })} />
         </Field>
         <div className="field">
@@ -124,8 +124,8 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
             value={f.kind}
             onChange={(kind) => set({ kind })}
             options={[
-              { value: 'past_paper', label: 'Past paper' },
-              { value: 'topic_test', label: 'Topic test' },
+              { value: 'past_paper', label: 'Practice exam' },
+              { value: 'topic_test', label: 'Unit test' },
             ]}
           />
         </div>
@@ -159,7 +159,7 @@ function PaperForm({ data, preset, close }: { data: AllData; preset?: PaperPrese
         <div className="modal-foot span-2" style={{ marginTop: 8 }}>
           <Button onClick={close}>Cancel</Button>
           <Button type="submit" variant="primary">
-            Save paper
+            Save
           </Button>
         </div>
       </form>

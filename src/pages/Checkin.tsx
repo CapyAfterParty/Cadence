@@ -39,7 +39,7 @@ function CheckinView({ data, weekStart }: { data: AllData; weekStart: string }) 
 
   return (
     <div className="page">
-      <Topbar eyebrow="Weekly review" title={isCurrent ? 'Weekly check-in' : `Check-in · week of ${fmtDay(weekStart)}`}>
+      <Topbar eyebrow={isCurrent ? 'This week' : `Week of ${fmtDay(weekStart)}`} title="Review">
         {!isCurrent && (
           <Link to="/checkin" className="btn">
             This week
@@ -149,7 +149,7 @@ function SubjectsProgress({ stats, data }: { stats: WeekStats; data: AllData }) 
     <Card index={7}>
       <CardHead icon={<Target size={18} strokeWidth={1.7} />} tone="meadow" title="On track?" aside="Average vs target" />
       {stats.subjects.length === 0 ? (
-        <p className="muted small">No subjects yet.</p>
+        <p className="muted small">No courses yet.</p>
       ) : (
         <div className="stack" style={{ gap: 14 }}>
           {stats.subjects.map((s) => {

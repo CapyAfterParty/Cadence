@@ -141,7 +141,7 @@ textarea {
 .main {
   position: relative;
   z-index: 1;
-  padding: var(--s10) var(--s12) var(--s16) calc(var(--sidebar) + var(--s12));
+  padding: var(--s10) var(--s10) var(--s16) calc(var(--sidebar) + var(--s10));
 }
 
 .page {
@@ -193,9 +193,9 @@ textarea {
 }
 
 .topbar h1 {
-  font-size: var(--fs-32);
-  font-weight: 400;
-  letter-spacing: -0.03em;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
   line-height: 1.1;
   display: flex;
   align-items: center;
@@ -245,6 +245,12 @@ textarea {
   .grid-3,
   .grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .main {
+    padding-left: calc(5rem + var(--s8));
   }
 }
 
@@ -1449,3 +1455,4 @@ button.list-item:disabled {
     transition-duration: 1ms !important;
   }
 }
+.topbar h1 .serif { font-weight: 400; font-size: 1.08em; letter-spacing: -0.02em; }

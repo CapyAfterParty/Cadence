@@ -1,8 +1,10 @@
-# Cadence
+# Summit OS
 
-A personal, local-first study system that runs one weekly loop: flashcards daily, a timed paper every weekend, every mistake redone until it is fixed, and a Sunday check-in.
+Pratham's study system. Built for one person, on the Ontario curriculum: courses with codes like SPH4U, unit tests and exams, marks in percent.
 
-Everything is stored in your browser (IndexedDB). No accounts, no backend, no cost. It is locked with a password.
+It runs one weekly loop (flashcards daily, a timed practice exam each weekend, every mistake redone until it is fixed, a Sunday review) and opens on **Today**: an ordered plan of what to do now.
+
+Everything is stored in the browser (IndexedDB) and locked with a password. No accounts, no backend, no cost.
 
 ## Run it
 
@@ -15,9 +17,9 @@ Open the URL Vite prints (usually http://localhost:5173). To build a static site
 
 ## Password lock
 
-The first time you open Cadence it walks you through setup and asks you to choose a password. From then on, every visit starts at the lock screen.
+The first time Summit OS opens, it asks for one thing: a password. From then on, every visit starts at the lock screen.
 
-- The password is never stored. Cadence keeps a PBKDF2-SHA256 verifier (310,000 iterations, random salt) in IndexedDB, next to your data, so clearing localStorage cannot skip the lock.
+- The password is never stored. Summit OS keeps a PBKDF2-SHA256 verifier (310,000 iterations, random salt) in IndexedDB, next to your data, so clearing localStorage cannot skip the lock.
 - It locks itself after a chosen idle time (Settings › Security; default 15 minutes), never in the middle of a timed paper. Lock by hand with ⇧⌘L / Ctrl+Shift+L or the lock in the sidebar.
 - After 5 wrong tries it makes you wait 30 seconds, doubling each time.
 - There is no recovery. "Forgot your password?" can only erase everything on this device and start fresh, so keep a JSON backup.
@@ -76,3 +78,13 @@ Minimal and calm, in the spirit of Zen.
 - `src/pages`: one file per screen
 - `src/features/Gate.tsx`: lock screen and onboarding; `src/lib/security.ts`: the password logic
 - `src/styles/tokens.css`: all design tokens
+
+## Navigation
+
+- **Today**: the plan for now, this week's numbers, and upcoming tests. The sidebar badge counts what is left.
+- **Progress**: the charts.
+- **Study**: Courses, Mistakes (badge: how many are due for a redo), Tests.
+- **Routine**: Focus (study timer and timed practice), Review (the Sunday check-in).
+- **Settings**: security, rhythm, backup.
+
+Your name and curriculum live in `src/owner.ts`.

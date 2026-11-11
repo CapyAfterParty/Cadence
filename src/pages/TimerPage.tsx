@@ -26,7 +26,7 @@ function TimerView({ data }: { data: AllData }) {
   const sprintFirst = params.get('sprint') === '1';
   return (
     <div className="page">
-      <Topbar eyebrow="Focus" title="Timer" />
+      <Topbar title="Focus" />
       <div className="grid-2">
         {sprintFirst ? (
           <>
@@ -102,7 +102,7 @@ function SprintCard({ data, index }: { data: AllData; index: number }) {
     <Card index={index} className="home-card">
       <CardHead icon={<Zap size={18} strokeWidth={SW} />} tone="lagoon" title="Timed sprint" aside="Exam conditions" />
       <p className="muted small">Full screen, timer only, no pause. When it ends, the paper log opens.</p>
-      <Field label="Subject">
+      <Field label="Course">
         <SubjectSelect data={data} value={subjectId} onChange={setSubjectId} />
       </Field>
       <div className="field">
@@ -160,7 +160,7 @@ function SessionsCard({ data }: { data: AllData }) {
           add();
         }}
       >
-        <Field label="Subject">
+        <Field label="Course">
           <SubjectSelect data={data} value={f.subjectId} onChange={(subjectId) => setF({ ...f, subjectId })} />
         </Field>
         <Field label="Date">

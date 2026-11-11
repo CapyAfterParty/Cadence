@@ -548,3 +548,17 @@
     padding: var(--s6);
   }
 }
+
+.first-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--s3);
+  width: min(22rem, 90vw);
+  margin-top: var(--s4);
+  animation: rise-in 1000ms var(--ease-out) 300ms both;
+}
+
+.first-form .btn {
+  margin-top: var(--s3);
+}

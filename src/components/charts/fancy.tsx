@@ -1,4 +1,4 @@
-// Cadence charts: soft, rounded and calm. Thick round-capped strokes,
+// Summit OS charts: soft, rounded and calm. Thick round-capped strokes,
 // gentle gradient fills, one halo for "now". Drawn at measured pixel size.
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import './fancy.css';
