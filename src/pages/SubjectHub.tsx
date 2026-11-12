@@ -254,10 +254,10 @@ function PapersCard({ data, subject }: { data: AllData; subject: Subject }) {
       <CardHead
         icon={<FileText size={18} strokeWidth={SW} />}
         tone="lagoon"
-        title="Papers and tests"
+        title="Tests"
         aside={
           <Link to={`/papers?subject=${subject.id}`} className="muted">
-            All papers
+            All tests
           </Link>
         }
       />

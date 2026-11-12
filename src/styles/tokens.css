@@ -1,8 +1,9 @@
 /*
- * Cadence design tokens: a calm, minimal system.
- * One warm neutral scale, one muted accent, generous space.
- * Sizes are in rem and the root is fluid with the viewport:
- * ~16px on a 16" MacBook Pro, ~19.7px on a 27" 5K display.
+ * Summit OS tokens.
+ * Near-black canvas with a dot grid and an indigo glow; smoked-glass
+ * surfaces; one electric-blue action colour; tall cards with their own
+ * colour worlds; dot-matrix numerals.
+ * Sizes are rem on a fluid root: ~16px on a 16" MacBook, ~19.7px on a 27".
  */
 html {
   font-size: clamp(14px, calc(8.4px + 0.44vw), 20px);
@@ -11,55 +12,72 @@ html {
 :root {
   color-scheme: dark;
 
-  /* Warm ink */
-  --bg: #0d0d0c;
-  --surface: #141413;
-  --surface-2: #1b1b19;
-  --surface-3: #232320;
-  --line: rgba(240, 236, 228, 0.07);
-  --line-strong: rgba(240, 236, 228, 0.13);
+  /* Canvas and glass */
+  --bg: #050507;
+  --surface: #111114;
+  --surface-2: #19191d;
+  --surface-3: #232328;
+  --glass: rgba(30, 30, 36, 0.62);
+  --glass-hi: rgba(255, 255, 255, 0.07);
+  --line: rgba(255, 255, 255, 0.07);
+  --line-strong: rgba(255, 255, 255, 0.14);
 
   /* Text */
-  --text: #ece9e2;
-  --text-2: rgba(236, 233, 226, 0.58);
-  --text-3: rgba(236, 233, 226, 0.36);
+  --text: #f7f7fa;
+  --text-2: rgba(247, 247, 250, 0.62);
+  --text-3: rgba(247, 247, 250, 0.4);
 
-  /* The one accent: muted clay. Used for "now", "today" and primary actions. */
-  --accent: #e7a37c;
-  --accent-soft: rgba(217, 146, 106, 0.12);
-  --accent-ink: #1a110c;
-  --focus: rgba(217, 146, 106, 0.55);
+  /* Action */
+  --accent: #3f6dff;
+  --accent-soft: rgba(63, 109, 255, 0.16);
+  --accent-ink: #ffffff;
+  --focus: rgba(110, 150, 255, 0.7);
 
-  /* Soft hues: earthy, muted, but warm enough to feel alive */
-  --clay: #e7a37c;
-  --sage: #9fc8a8;
-  --mist: #9dbbdc;
-  --lavender: #b9a8e0;
-  --sand: #e6cd92;
-  --rose: #e3a4b1;
+  /* Data hues: vivid but few. (Old names kept so every chart picks them up.) */
+  --clay: #ff5fa2; /* magenta */
+  --rose: #ff7aa8; /* pink */
+  --lavender: #9b82ff; /* violet */
+  --mist: #5b8cff; /* blue */
+  --sage: #c8f36b; /* lime */
+  --sand: #ffd36b; /* amber */
 
-  --g-clay: linear-gradient(140deg, #f2c09f, #e7a37c 55%, #d88a64);
-  --g-sage: linear-gradient(140deg, #c3e2c9, #9fc8a8 55%, #7fb08b);
-  --g-mist: linear-gradient(140deg, #c4d8ee, #9dbbdc 55%, #7f9fc6);
-  --g-lavender: linear-gradient(140deg, #d6caf2, #b9a8e0 55%, #9d89cc);
-  --g-sand: linear-gradient(140deg, #f2e2b8, #e6cd92 55%, #d4b571);
-  --g-rose: linear-gradient(140deg, #f2c6cf, #e3a4b1 55%, #cf8796);
+  --g-clay: linear-gradient(140deg, #ff8cbd, #ff4f97 55%, #d61f72);
+  --g-rose: linear-gradient(140deg, #ffb0c9, #ff7aa8 55%, #e04f84);
+  --g-lavender: linear-gradient(140deg, #c3b3ff, #9b82ff 55%, #7558f0);
+  --g-mist: linear-gradient(140deg, #9fbaff, #5b8cff 55%, #3a64f0);
+  --g-sage: linear-gradient(140deg, #e3ffa8, #c8f36b 55%, #9fd13a);
+  --g-sand: linear-gradient(140deg, #ffe7a8, #ffd36b 55%, #f0b23a);
+  --g-blue: linear-gradient(150deg, #6f9bff 0%, #3f6dff 45%, #2244e0 100%);
 
-  /* Quiet status colours */
-  --green: #8fb996;
-  --amber: #d6b37a;
-  --red: #d38a84;
+  /* The four card worlds */
+  --world-magenta:
+    radial-gradient(90% 55% at 50% 100%, rgba(255, 140, 200, 0.55), transparent 70%),
+    radial-gradient(120% 80% at 20% 0%, #ff3d8f 0%, transparent 60%),
+    linear-gradient(180deg, #e01f78 0%, #8e0f4c 40%, #3a0820 70%, #a3175c 100%);
+  --world-blue:
+    radial-gradient(70% 45% at 50% 60%, rgba(4, 10, 60, 0.85), transparent 70%),
+    linear-gradient(180deg, #4d8dff 0%, #2f5cff 35%, #1c35d6 65%, #6a8cff 100%);
+  --world-smoke:
+    radial-gradient(70% 55% at 50% 45%, #030303 0%, #0b0b0c 45%, transparent 75%),
+    linear-gradient(180deg, #4a4a4f 0%, #1f1f22 40%, #2a2a2e 75%, #5b5b60 100%);
+  --world-reed: linear-gradient(180deg, #e9e9ee 0%, #b9b9c2 55%, #2a2a30 100%);
+
+  --green: #7ee2a8;
+  --amber: #ffd36b;
+  --red: #ff6b8b;
 
   /* Shape */
-  --r-xl: 2.25rem;
-  --r-card: 2rem;
-  --r-lg: 1.4rem;
+  --r-hero: 2.4rem;
+  --r-xl: 2rem;
+  --r-card: 1.6rem;
+  --r-lg: 1.25rem;
   --r-input: 1rem;
   --r-full: 999px;
 
   /* Type */
-  --font: 'Geist Variable', 'Geist', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
-  --serif: 'Instrument Serif', 'New York', 'Iowan Old Style', Georgia, serif;
+  --font: 'Outfit Variable', 'Outfit', 'Geist Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --dots: 'Doto Variable', 'Doto', 'Geist Mono Variable', ui-monospace, monospace;
+  --serif: 'Instrument Serif', Georgia, serif;
   --mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   --fs-11: 0.6875rem;
@@ -85,21 +103,20 @@ html {
   --s10: 2.5rem;
   --s12: 3rem;
   --s16: 4rem;
-  --card-pad: 2rem;
-  --gap: 1.25rem;
-  --sidebar: 15.25rem;
+  --card-pad: 1.6rem;
+  --gap: 1rem;
+  --sidebar: 5.5rem;
 
-  /* Depth: barely there */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 10px 20px -10px rgba(0, 0, 0, 0.45), 0 30px 60px -30px rgba(0, 0, 0, 0.6);
-  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.2), 0 24px 48px -16px rgba(0, 0, 0, 0.6), 0 50px 100px -40px rgba(0, 0, 0, 0.7);
-  --hi: inset 0 1px 0 rgba(255, 248, 236, 0.07);
+  /* Depth */
+  --hi: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 18px 40px -16px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3), 0 30px 70px -20px rgba(0, 0, 0, 0.85);
 
-  /* Motion: slow in, gentle out. No overshoot. */
+  /* Motion */
   --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  /* A soft spring: settles with the faintest give, never bounces. */
-  --soft: cubic-bezier(0.34, 1.25, 0.64, 1);
+  --soft: cubic-bezier(0.34, 1.3, 0.64, 1);
   --t-fast: 160ms;
   --t-med: 280ms;
   --t-slow: 700ms;

@@ -7,12 +7,12 @@ export type Hue = 'clay' | 'sage' | 'mist' | 'lavender' | 'sand' | 'rose';
 
 /** Light and deep ends of each hue, for gradients. */
 export const HUES: Record<Hue, [string, string]> = {
-  clay: ['#f2c09f', '#d88a64'],
-  sage: ['#c3e2c9', '#7fb08b'],
-  mist: ['#c4d8ee', '#7f9fc6'],
-  lavender: ['#d6caf2', '#9d89cc'],
-  sand: ['#f2e2b8', '#d4b571'],
-  rose: ['#f2c6cf', '#cf8796'],
+  clay: ['#ff9cc6', '#ff3d8f'],
+  sage: ['#e3ffa8', '#a8dc3e'],
+  mist: ['#a9c2ff', '#3f6dff'],
+  lavender: ['#cdbfff', '#7a5cf5'],
+  sand: ['#ffe7a8', '#f5b63a'],
+  rose: ['#ffb8cf', '#f0578c'],
 };
 
 export function useSize<T extends HTMLElement>() {
