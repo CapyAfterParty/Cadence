@@ -124,7 +124,7 @@ function MistakesView({ data }: { data: AllData }) {
         </Link>
       </Topbar>
 
-      <Card index={0}>
+      <Card index={0} tint="#6d5cff" className="quiet">
         <div className="row" style={{ gap: 12 }}>
           <div style={{ width: 180 }}>
             <SubjectSelect data={data} value={subjectId} onChange={setSubject} includeAll size="sm" />
@@ -167,7 +167,7 @@ function MistakesView({ data }: { data: AllData }) {
         </div>
       </Card>
 
-      <Card index={1}>
+      <Card index={1} tint="#6d5cff" className="quiet">
         {rows.length === 0 ? (
           <Empty
             text={data.mistakes.length ? 'No mistakes match these filters.' : 'No mistakes yet. Every one you log becomes practice.'}

@@ -52,7 +52,7 @@ export default function Subjects() {
                       {avg == null ? '–' : `${Math.round(avg)}%`} <span className="muted">/ {s.targetPct}%</span>
                     </span>
                   </div>
-                  <Progress value={avg ?? 0} target={s.targetPct} color={avg != null && avg >= s.targetPct ? 'var(--green)' : undefined} />
+                  <Progress value={avg ?? 0} target={s.targetPct} color={s.colour} />
                   <div className="row small muted">
                     <span>{open} open mistakes</span>
                     <span>·</span>

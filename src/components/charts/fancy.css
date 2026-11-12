@@ -1,30 +1,258 @@
 .axis-text {
-  font-family: var(--mono);
+  font-family: var(--font);
   font-size: var(--fs-11);
-  fill: var(--text-3);
+  fill: rgba(255, 255, 255, 0.4);
   font-variant-numeric: tabular-nums;
 }
 
 .axis-text.on {
-  fill: var(--text-2);
+  fill: rgba(255, 255, 255, 0.85);
 }
 
-.draw {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw 1600ms var(--ease-out) 150ms forwards;
+/* Tick ruler */
+.ruler {
+  position: relative;
+  padding-top: 0.9rem;
 }
 
-@keyframes draw {
-  to {
-    stroke-dashoffset: 0;
-  }
+.ruler-marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.6rem;
 }
 
-.pop {
-  animation: fade 600ms var(--ease) 1200ms both;
+.mark {
+  position: absolute;
+  top: 0;
+  width: 0.36rem;
+  height: 0.36rem;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.85);
 }
 
+.mark.lo {
+  background: #ffe36b;
+  box-shadow: 0 0 8px rgba(255, 227, 107, 0.8);
+}
+
+.mark.val {
+  width: 0.42rem;
+  height: 0.42rem;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+}
+
+.mark.hi {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.ruler-ticks {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.ruler-ticks span {
+  width: 1px;
+  height: 40%;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.ruler-ticks span.major {
+  height: 75%;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.ruler-ticks span.on {
+  height: 100%;
+  width: 1.5px;
+  background: #fff;
+  box-shadow: 0 0 6px #fff;
+}
+
+.ruler-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.55rem;
+  font-size: var(--fs-13);
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ruler-labels .mid {
+  color: #fff;
+}
+
+/* Waveform */
+.wave {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  height: 100%;
+}
+
+.wave-plot {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wave-group {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.wt {
+  width: 1.5px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.wt.bar {
+  width: 2px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.wt.bar.on {
+  width: 2.5px;
+  background: var(--hw);
+  box-shadow: 0 0 10px var(--hw), 0 0 2px var(--hw);
+}
+
+.wave-labels {
+  display: flex;
+  font-size: var(--fs-11);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.wave-labels span {
+  flex: 1;
+  text-align: center;
+}
+
+.wave-labels span.on {
+  color: #fff;
+}
+
+/* Range line */
+.range {
+  position: relative;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.range-track {
+  width: 100%;
+  height: 3px;
+  border-radius: 3px;
+  opacity: 0.9;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+}
+
+.range-marker {
+  position: absolute;
+  top: -0.15rem;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border-left: 0.42rem solid transparent;
+  border-right: 0.42rem solid transparent;
+  border-top: 0.6rem solid #ffe36b;
+  filter: drop-shadow(0 0 6px rgba(255, 227, 107, 0.8));
+}
+
+.range-target {
+  position: absolute;
+  top: 0.15rem;
+  bottom: 0.15rem;
+  width: 1.5px;
+  transform: translateX(-50%);
+  background: #fff;
+}
+
+/* Dot row */
+.dotrow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dr-dots,
+.dr-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dr {
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.dr.on {
+  width: 0.4rem;
+  height: 0.4rem;
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+.dr.now {
+  width: 0.62rem;
+  height: 0.62rem;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15), 0 0 16px rgba(255, 255, 255, 0.9);
+}
+
+.dr-labels {
+  font-size: var(--fs-11);
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dr-labels span {
+  width: 0.62rem;
+  text-align: center;
+}
+
+.dr-labels span.on {
+  color: #fff;
+}
+
+/* Ring around a number */
+.ring-num {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.ring-num svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ring-num span {
+  font-size: var(--fs-24);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+/* Loop ring */
 .loop-ring {
   position: relative;
   width: 100%;
@@ -47,107 +275,7 @@
   text-align: center;
 }
 
-.ring-fill {
-  animation: ring-fill 1800ms var(--ease-out) both;
-}
-
-@keyframes ring-fill {
-  from {
-    stroke-dasharray: 0 1;
-  }
-}
-
-.zbars {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  height: 100%;
-}
-
-.zbars-plot {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: stretch;
-  gap: 0.6rem;
-}
-
-.zbar-col {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.zbar-track {
-  position: relative;
-  width: 100%;
-  max-width: 1.15rem;
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--hb) 10%, transparent);
-  display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-}
-
-.zbar {
-  width: 100%;
-  border-radius: 1rem;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--ha) 55%, transparent), color-mix(in srgb, var(--hb) 55%, transparent));
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.25);
-  transform-origin: bottom;
-  animation: grow-y 1100ms var(--soft) both;
-}
-
-.zbar.on {
-  background: var(--g-clay);
-  box-shadow: inset 0 1px 0 rgba(255, 240, 225, 0.55), 0 0 18px -2px rgba(231, 163, 124, 0.45);
-}
-
-.zbars-labels {
-  display: flex;
-  gap: 0.6rem;
-  font-family: var(--mono);
-  font-size: var(--fs-11);
-  color: var(--text-3);
-}
-
-.zbars-labels span {
-  flex: 1;
-  text-align: center;
-}
-
-.zbars-labels span.on {
-  color: var(--clay);
-}
-
-@keyframes grow-y {
-  from {
-    transform: scaleY(0);
-  }
-}
-
-.soft-fill {
-  animation: fade 1400ms var(--ease) 300ms both;
-}
-
-.halo {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: halo 3.6s ease-in-out 1.4s infinite;
-}
-
-@keyframes halo {
-  0%,
-  100% {
-    transform: scale(0.8);
-    opacity: 0.12;
-  }
-  50% {
-    transform: scale(1.25);
-    opacity: 0.24;
-  }
-}
-
+/* Lines */
 .spark,
 .mline {
   width: 100%;
@@ -168,14 +296,15 @@
   overflow: visible;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .draw,
-  .pop,
-  .ring-fill,
-  .zbar,
-  .halo,
-  .soft-fill {
-    animation: none;
-    stroke-dashoffset: 0;
-  }
+/* Legacy class kept for the bars on other screens */
+.zbars {
+  display: none;
+}
+
+.wave-plot {
+  max-height: 11rem;
+}
+
+.wave {
+  justify-content: flex-end;
 }

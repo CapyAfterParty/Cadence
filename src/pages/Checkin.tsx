@@ -165,7 +165,7 @@ function SubjectsProgress({ stats, data }: { stats: WeekStats; data: AllData }) 
                     <span className={on ? 'pill green' : s.avg == null ? 'pill' : 'pill amber'}>{s.avg == null ? 'No data' : on ? 'On track' : 'Behind'}</span>
                   </span>
                 </div>
-                <Progress value={s.avg ?? 0} target={s.target} color={on ? 'var(--green)' : undefined} />
+                <Progress value={s.avg ?? 0} target={s.target} color={colour.get(s.subjectId)} />
               </div>
             );
           })}

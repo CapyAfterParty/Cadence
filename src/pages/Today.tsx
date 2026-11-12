@@ -1,40 +1,53 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, FileText, Layers, Plus, Search, Square, Timer } from 'lucide-react';
+import { CalendarCheck, CalendarClock, Check, ChevronLeft, ChevronRight, FileText, Layers, ListPlus, Play, RotateCcw, Square, Timer, Zap } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import type { Subject } from '../db/types';
-import { addDays, daysBetween, fmtClock, fmtDay, greeting, parseDay, todayKey, weekStartKey } from '../lib/dates';
-import { activeSubjects, cardsByDay, dueMistakes, loopScore, minutesByDay, pct, subjectAverage } from '../lib/stats';
+import { addDays, daysBetween, fmtClock, fmtDay, fmtHours, greeting, parseDay, todayKey, weekStartKey } from '../lib/dates';
+import { activeSubjects, cardsByDay, dueMistakes, flashStreak, loopScore, minutesByDay, pct, subjectAverage } from '../lib/stats';
 import { todayPlan, type PlanItem } from '../lib/plan';
 import { courseTitle, splitCourse } from '../lib/course';
 import { openUI, settings, timer } from '../lib/state';
 import { OWNER } from '../owner';
-import { Skeleton, cx } from '../components/ui';
-import { useScans } from '../components/Scans';
+import { Card, Skeleton, cx } from '../components/ui';
+import { Bars, DotRow, RangeLine, Ring, Spark, TickRuler } from '../components/charts/fancy';
 import { startStudy, stopStudy } from '../features/timerActions';
 import { timerSeconds, useNow } from '../features/TimerController';
 import './today.css';
+
+const ICONS: Record<PlanItem['icon'], typeof Check> = {
+  test: CalendarClock,
+  cards: Layers,
+  redo: RotateCcw,
+  study: Play,
+  timed: Zap,
+  review: CalendarCheck,
+};
+
+/** Each tile's aura: two colours that glow from inside it. */
+const aura = (a: string, b: string, pos?: { ax?: string; ay?: string; bx?: string; by?: string }) =>
+  ({ ['--tint' as string]: a, ['--tint-2' as string]: b, ...(pos?.ax ? { ['--ax' as string]: pos.ax } : {}), ...(pos?.ay ? { ['--ay' as string]: pos.ay } : {}), ...(pos?.bx ? { ['--bx' as string]: pos.bx } : {}), ...(pos?.by ? { ['--by' as string]: pos.by } : {}) }) as React.CSSProperties;
 
 export default function Today() {
   const data = useData();
   const today = todayKey();
   return (
-    <div className="page today2">
+    <div className="page today3">
       <header className="t-head">
         <div>
-          <span className="eyebrow">{parseDay(today).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+          <span className="t-date">{parseDay(today).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}</span>
           <h1>
             {greeting()}, {OWNER.name}
           </h1>
         </div>
-        <RunningPill data={data} />
+        <Running data={data} />
       </header>
-      {data ? <Body data={data} /> : <Skeleton height="26rem" />}
+      {data ? <Body data={data} /> : <Skeleton height="30rem" />}
     </div>
   );
 }
 
-function RunningPill({ data }: { data?: AllData }) {
+function Running({ data }: { data?: AllData }) {
   const t = timer.use();
   const now = useNow(t?.kind === 'study');
   if (!t || t.kind !== 'study') return null;
@@ -42,9 +55,9 @@ function RunningPill({ data }: { data?: AllData }) {
   return (
     <div className="t-running">
       <span className="pulse" />
-      <span className="dots">{fmtClock(timerSeconds(t, now))}</span>
+      <span className="num">{fmtClock(timerSeconds(t, now))}</span>
       <span className="muted small">{s ? courseTitle(s.name) : ''}</span>
-      <button type="button" className="round white" onClick={stopStudy} aria-label="Stop and save">
+      <button type="button" className="bubble white" onClick={stopStudy} aria-label="Stop and save">
         <Square size={11} strokeWidth={2.4} fill="currentColor" />
       </button>
     </div>
@@ -52,130 +65,39 @@ function RunningPill({ data }: { data?: AllData }) {
 }
 
 function Body({ data }: { data: AllData }) {
-  const subjects = activeSubjects(data);
-  if (!subjects.length)
+  if (!activeSubjects(data).length)
     return (
       <Link to="/subjects" className="t-empty">
-        Add your courses to begin <ArrowRight size={16} />
+        Add your courses to begin <ChevronRight size={16} />
       </Link>
     );
   return (
     <>
-      <div className="hero-row">
-        <WeekCard data={data} />
-        <NextCard data={data} />
-        <MistakesCard data={data} />
-        <ComingCard data={data} />
+      <div className="today-grid">
+        <PlanGel data={data} />
+        <div className="tiles">
+          <NextTestTile data={data} />
+          <TargetTile data={data} />
+          <WeekTile data={data} />
+          <StudiedTile data={data} />
+          <RedoTile data={data} />
+          <FlashTile data={data} />
+        </div>
       </div>
-      <ChipRow data={data} />
       <Timeline data={data} />
     </>
   );
 }
 
-/* ---------- Shared bits ---------- */
+/* ---------- The plan, on gel ---------- */
 
-function ArrowBtn({ to, label }: { to: string; label: string }) {
-  return (
-    <Link to={to} className="round white" aria-label={label}>
-      <ArrowUpRight size={16} strokeWidth={2.2} />
-    </Link>
-  );
-}
-
-const weekDays = () => {
-  const ws = weekStartKey();
-  return Array.from({ length: 7 }, (_, i) => addDays(ws, i));
-};
-
-/* ---------- 1. This week (magenta) ---------- */
-
-function WeekCard({ data }: { data: AllData }) {
-  const st = settings.use();
-  const days = weekDays();
-  const today = todayKey();
-  const cards = cardsByDay(data);
-  const mins = minutesByDay(data);
-  const attempts = new Set(data.attempts.map((a) => a.date));
-  const tests = new Set(data.papers.map((p) => p.date));
-  const rows: { label: string; on: (d: string) => boolean }[] = [
-    { label: 'Cards', on: (d) => (cards.get(d) ?? 0) > 0 },
-    { label: 'Study', on: (d) => (mins.get(d) ?? 0) > 0 },
-    { label: 'Redo', on: (d) => attempts.has(d) },
-    { label: 'Tests', on: (d) => tests.has(d) },
-  ];
-  const week = days.reduce((a, d) => a + (mins.get(d) ?? 0), 0);
-  const sessions = data.sessions.filter((s) => days.includes(s.date)).length;
-  const loop = loopScore(data, weekStartKey(), st.redoDays).score;
-  return (
-    <article className="hero magenta" style={{ ['--i' as string]: 0 }}>
-      <div className="h-top">
-        <h2>This week</h2>
-        <ArrowBtn to="/progress" label="Open progress" />
-      </div>
-      <div className="h-meta">
-        <div className="h-count">
-          <span className="dots big">{sessions}</span>
-          <span className="small">sessions</span>
-        </div>
-        <ul className="legend-dots">
-          <li>
-            <i className="on" /> Done
-          </li>
-          <li>
-            <i /> Missed
-          </li>
-        </ul>
-      </div>
-      <div className="dot-grid" role="img" aria-label="This week's habits by day">
-        {rows.map((r, ri) => (
-          <div key={r.label} className="dg-row">
-            {days.map((d, di) => {
-              const future = d > today;
-              return <span key={d} className={cx('dg', r.on(d) && 'on', future && 'future', d === today && 'is-today')} style={{ animationDelay: `${300 + (ri * 7 + di) * 18}ms` }} title={`${r.label} · ${fmtDay(d, { weekday: 'short' })}`} />;
-            })}
-          </div>
-        ))}
-        <div className="dg-days">
-          {days.map((d) => (
-            <span key={d} className={d === today ? 'on' : undefined}>
-              {parseDay(d).toLocaleDateString(undefined, { weekday: 'narrow' })}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className="h-bottom">
-        <span className="dots huge">
-          {Math.floor(week / 60)}
-          <small>h</small>
-          {String(Math.round(week % 60)).padStart(2, '0')}
-          <small>m</small>
-        </span>
-        <span className="h-sub">studied · loop {loop}%</span>
-      </div>
-    </article>
-  );
-}
-
-/* ---------- 2. Next up (reeded glass) ---------- */
-
-function useHeroPhoto() {
-  const photos = useScans('hero', 'hero');
-  const photo = photos?.[0];
-  const url = useMemo(() => (photo ? URL.createObjectURL(photo.blob) : null), [photo]);
-  useEffect(() => () => void (url && URL.revokeObjectURL(url)), [url]);
-  return url;
-}
-
-function NextCard({ data }: { data: AllData }) {
-  const st = settings.use();
+function PlanGel({ data }: { data: AllData }) {
   const nav = useNavigate();
-  const photo = useHeroPhoto();
-  const today = todayKey();
-  const next = activeSubjects(data)
-    .filter((s) => s.nextTestDate && s.nextTestDate >= today)
-    .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1))[0];
-  const plan = todayPlan(data, st.redoDays, st.lastSubjectId).filter((p) => !p.done).slice(0, 3);
+  const st = settings.use();
+  const plan = todayPlan(data, st.redoDays, st.lastSubjectId);
+  const left = plan.filter((p) => !p.done).length;
+  const subjects = activeSubjects(data);
+  const study = subjects.find((s) => s.id === st.lastSubjectId) ?? subjects[0];
   const run = (p: PlanItem) => {
     const a = p.action;
     if (a.kind === 'nav') nav(a.to);
@@ -183,251 +105,212 @@ function NextCard({ data }: { data: AllData }) {
     else if (a.kind === 'study') startStudy(a.subjectId);
     else openUI({ logPaper: { preset: { subjectId: a.subjectId } } });
   };
-  const { code, title } = next ? splitCourse(next.name) : { code: null, title: '' };
   return (
-    <article className="hero reed" style={{ ['--i' as string]: 1 }}>
-      <div className="reed-scene" aria-hidden="true">
-        {photo ? (
-          <img src={photo} alt="" />
-        ) : (
-          <svg viewBox="0 0 300 420" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <linearGradient id="rsky" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0" stopColor="#f4f4f8" />
-                <stop offset="0.55" stopColor="#c9c9d3" />
-                <stop offset="1" stopColor="#6e6e7a" />
-              </linearGradient>
-              <radialGradient id="rsun" cx="0.62" cy="0.3" r="0.35">
-                <stop offset="0" stopColor="#ffd2e6" />
-                <stop offset="0.5" stopColor="#c9b8ff" stopOpacity="0.6" />
-                <stop offset="1" stopColor="#c9b8ff" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            <rect width="300" height="420" fill="url(#rsky)" />
-            <rect width="300" height="420" fill="url(#rsun)" />
-            <path d="M-10 300 L70 190 L105 225 L160 120 L215 210 L245 180 L310 260 V420 H-10Z" fill="#2c2c34" />
-            <path d="M160 120 L178 150 L168 146 L160 160 L150 145 L142 150Z" fill="#f4f4f8" opacity="0.9" />
-            <path d="M-10 340 L60 270 L120 310 L190 250 L310 320 V420 H-10Z" fill="#16161b" />
-          </svg>
-        )}
-        <div className="reeds" />
+    <Card className="juice plan-gel" index={0} style={aura('#ff3d9a', '#7a4dff', { ax: '20%', ay: '0%', bx: '90%', by: '100%' })}>
+      <div className="g-head">
+        <span className="g-title">Today’s plan</span>
+        <span className="glass-chip num">{left ? `${left} left` : 'All done'}</span>
       </div>
-
-      <div className="glass-panel next-test">
-        {next ? (
-          <>
-            <span className="mini-card" style={{ ['--c' as string]: next.colour }}>
-              <em>{code ?? title.slice(0, 3).toUpperCase()}</em>
-            </span>
-            <span className="np-main">
-              <strong>{title}</strong>
-              <span>
-                Test · {fmtDay(next.nextTestDate!, { weekday: 'short', day: 'numeric', month: 'short' })}
+      <div className="g-pills">
+        {plan.map((p) => {
+          const Icon = ICONS[p.icon];
+          return (
+            <button key={p.id} type="button" className={cx('g-pill', p.done && 'done', p.urgent && 'urgent')} onClick={() => run(p)}>
+              <span className="bubble">{p.done ? <Check size={14} strokeWidth={2.4} /> : <Icon size={14} strokeWidth={2} />}</span>
+              <span className="gp-main">
+                <span className="gp-title">{p.title}</span>
+                <span className="gp-detail">{p.detail}</span>
               </span>
-            </span>
-            <button type="button" className="round white" onClick={() => nav(`/redo?subject=${next.id}`)} aria-label={`Redo ${title} mistakes`}>
-              <ArrowRight size={16} strokeWidth={2.2} />
+              <ChevronRight size={16} className="gp-chev" />
             </button>
-          </>
-        ) : (
-          <span className="np-main">
-            <strong>No test dates</strong>
-            <span>Set one on a course</span>
-          </span>
-        )}
+          );
+        })}
       </div>
+      <div className="g-dock">
+        <button type="button" className="dock-pill" onClick={() => openUI({ flashLog: true })} aria-label="Log flashcards" title="Flashcards">
+          <Layers size={17} strokeWidth={1.8} />
+        </button>
+        <button type="button" className="dock-pill" onClick={() => openUI({ bulk: { subjectId: st.lastSubjectId } })} aria-label="Mistakes from a test" title="Mistakes from a test">
+          <ListPlus size={17} strokeWidth={1.8} />
+        </button>
+        <button type="button" className="dock-pill white" onClick={() => startStudy(study.id)}>
+          <Play size={15} strokeWidth={2} fill="currentColor" /> Study {courseTitle(study.name)}
+        </button>
+        <button type="button" className="dock-pill" onClick={() => openUI({ logPaper: { preset: { subjectId: st.lastSubjectId } } })} aria-label="Log a test" title="Log a test">
+          <FileText size={17} strokeWidth={1.8} />
+        </button>
+        <button type="button" className="dock-pill" onClick={() => nav('/timer?sprint=1')} aria-label="Timed practice" title="Timed practice">
+          <Timer size={17} strokeWidth={1.8} />
+        </button>
+      </div>
+    </Card>
+  );
+}
 
-      <div className="glass-panel plan-panel">
-        <div className="pp-head">
-          <h3>Next up</h3>
-          <button type="button" className="round dark" onClick={() => openUI({ quickAdd: { preset: { subjectId: st.lastSubjectId } } })} aria-label="New mistake">
-            <Plus size={16} strokeWidth={2.2} />
+/* ---------- Instrument tiles ---------- */
+
+function Tile({ label, children, style, className, to, index }: { label: string; children: React.ReactNode; style: React.CSSProperties; className?: string; to?: string; index: number }) {
+  const body = (
+    <>
+      <span className="tile-label">{label}</span>
+      {children}
+    </>
+  );
+  return (
+    <Card className={cx('tile', className, to && 'hoverable')} index={index} style={style}>
+      {to ? (
+        <Link to={to} className="tile-link">
+          {body}
+        </Link>
+      ) : (
+        body
+      )}
+    </Card>
+  );
+}
+
+function NextTestTile({ data }: { data: AllData }) {
+  const today = todayKey();
+  const next = activeSubjects(data)
+    .filter((s) => s.nextTestDate && s.nextTestDate >= today)
+    .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1))[0];
+  const avg = next ? subjectAverage(data, next.id) : null;
+  const d = next ? daysBetween(today, next.nextTestDate!) : 0;
+  return (
+    <Tile label="Next test" className="wide" index={1} to={next ? `/subjects/${next.id}` : '/subjects'} style={aura('#3f6dff', '#a35cff', { ax: '75%', ay: '30%', bx: '20%', by: '110%' })}>
+      {next ? (
+        <div className="nt-row">
+          <div>
+            <div className="num-xl">
+              {d}
+              <small>{d === 1 ? 'day' : 'days'}</small>
+            </div>
+            <span className="tile-sub">
+              {courseTitle(next.name)} · {fmtDay(next.nextTestDate!, { weekday: 'short', day: 'numeric', month: 'short' })}
+            </span>
+          </div>
+          <Ring value={avg ?? 0} label={avg == null ? '–' : String(Math.round(avg))} />
+        </div>
+      ) : (
+        <span className="tile-sub">No test dates yet</span>
+      )}
+    </Tile>
+  );
+}
+
+function TargetTile({ data }: { data: AllData }) {
+  const st = settings.use();
+  const subjects = activeSubjects(data);
+  const s = subjects.find((x) => x.id === st.lastSubjectId) ?? subjects[0];
+  const avg = subjectAverage(data, s.id);
+  return (
+    <Tile label={`${courseTitle(s.name)} average`} index={2} to={`/subjects/${s.id}`} style={aura('#3ecf7a', '#c8ff6b', { ax: '50%', ay: '60%', bx: '0%', by: '0%' })}>
+      <div className="num-xl">
+        {avg == null ? '–' : Math.round(avg)}
+        <small>%</small>
+      </div>
+      <div className="tile-foot">
+        <RangeLine value={avg} target={s.targetPct} />
+        <span className="tile-sub">target {s.targetPct}%</span>
+      </div>
+    </Tile>
+  );
+}
+
+function WeekTile({ data }: { data: AllData }) {
+  const st = settings.use();
+  const ws = weekStartKey();
+  const today = todayKey();
+  const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+  const cards = cardsByDay(data);
+  const mins = minutesByDay(data);
+  const loop = loopScore(data, ws, st.redoDays).score;
+  return (
+    <Tile label="This week" index={3} to="/progress" style={aura('#ff4fa0', '#ff9ad1', { ax: '50%', ay: '55%', bx: '100%', by: '0%' })}>
+      <div className="num-xl">
+        {loop}
+        <small>%</small>
+      </div>
+      <div className="tile-foot">
+        <DotRow values={days.map((d) => (cards.get(d) ?? 0) > 0 || (mins.get(d) ?? 0) > 0)} current={days.indexOf(today)} labels={days.map((d) => parseDay(d).toLocaleDateString(undefined, { weekday: 'narrow' }))} />
+      </div>
+    </Tile>
+  );
+}
+
+function StudiedTile({ data }: { data: AllData }) {
+  const ws = weekStartKey();
+  const today = todayKey();
+  const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
+  const mins = minutesByDay(data);
+  const week = days.reduce((a, d) => a + (mins.get(d) ?? 0), 0);
+  return (
+    <Tile label="Studied" index={4} to="/timer" style={aura('#ff7a2f', '#ff3d6b', { ax: '85%', ay: '90%', bx: '10%', by: '0%' })}>
+      <div className="num-xl">
+        {Math.floor(week / 60)}
+        <small>h</small> {Math.round(week % 60)}
+        <small>m</small>
+      </div>
+      <div className="tile-foot wave-foot">
+        <Bars values={days.map((d) => mins.get(d) ?? 0)} labels={days.map((d) => parseDay(d).toLocaleDateString(undefined, { weekday: 'narrow' }))} highlight={days.indexOf(today)} hue="sand" format={fmtHours} />
+      </div>
+    </Tile>
+  );
+}
+
+function RedoTile({ data }: { data: AllData }) {
+  const st = settings.use();
+  const due = dueMistakes(data, st.redoDays).length;
+  const open = data.mistakes.filter((m) => !m.cleared).length;
+  return (
+    <Tile label="To redo" index={5} to="/mistakes?status=due" style={aura('#ff3d6b', '#8a6cff', { ax: '15%', ay: '20%', bx: '95%', by: '100%' })}>
+      <div className="num-xl">
+        {due}
+        <small>of {open}</small>
+      </div>
+      <div className="tile-foot">
+        <TickRuler value={due} min={0} max={Math.max(open, 1)} labels={['0', String(due), String(open)]} />
+      </div>
+    </Tile>
+  );
+}
+
+function FlashTile({ data }: { data: AllData }) {
+  const cards = cardsByDay(data);
+  const today = todayKey();
+  const days = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6));
+  const n = cards.get(today) ?? 0;
+  return (
+    <Tile label="Flashcards" className="wide" index={6} style={aura('#8a6cff', '#3f6dff', { ax: '90%', ay: '10%', bx: '30%', by: '110%' })}>
+      <div className="fl-row">
+        <div>
+          <div className="num-xl">
+            {n}
+            <small>today</small>
+          </div>
+          <span className="tile-sub">Streak {flashStreak(data)} days</span>
+          <button type="button" className="glass-chip action" onClick={() => openUI({ flashLog: true })}>
+            Log cards
           </button>
         </div>
-        {plan.length === 0 && <p className="pp-clear">All done for today.</p>}
-        {plan.map((p) => (
-          <button key={p.id} type="button" className="pp-row" onClick={() => run(p)}>
-            <span className="pp-dot" style={{ background: `var(--${p.hue})` }} />
-            <span className="pp-title">{p.title}</span>
-            <span className="pp-detail">{p.detail}</span>
-          </button>
-        ))}
+        <div className="fl-chart">
+          <Spark values={days.map((d) => cards.get(d) ?? 0)} labels={days.map((d) => parseDay(d).toLocaleDateString(undefined, { weekday: 'narrow' }))} hue="lavender" />
+        </div>
       </div>
-    </article>
+    </Tile>
   );
 }
 
-/* ---------- 3. Mistakes (smoke, orbit) ---------- */
-
-function MistakesCard({ data }: { data: AllData }) {
-  const st = settings.use();
-  const nav = useNavigate();
-  const due = dueMistakes(data, st.redoDays);
-  const open = data.mistakes.filter((m) => !m.cleared).length;
-  const by = activeSubjects(data)
-    .map((s) => ({ s, n: due.filter((m) => m.subjectId === s.id).length }))
-    .sort((a, b) => b.n - a.n);
-  const centre = by[0];
-  const ring = by.slice(1, 5);
-  const ws = weekStartKey();
-  const logged = data.mistakes.filter((m) => m.date >= ws).length;
-  const pos = ['top', 'right', 'bottom', 'left'];
-  return (
-    <article className="hero smoke" style={{ ['--i' as string]: 2 }}>
-      <div className="h-top">
-        <h2>Mistakes</h2>
-        <span className="glass-tab">
-          Due now
-          <i />
-        </span>
-      </div>
-      <div className="h-count">
-        <span className="dots big">{open}</span>
-        <span className="small">open</span>
-      </div>
-      <div className="orbit">
-        <span className="orbit-ring r1" />
-        <span className="orbit-ring r2" />
-        {centre && (
-          <button type="button" className="orb-centre" onClick={() => nav(`/redo?subject=${centre.s.id}`)} title={`${courseTitle(centre.s.name)}: ${centre.n} due`}>
-            <span style={{ color: centre.s.colour }}>{(splitCourse(centre.s.name).code ?? courseTitle(centre.s.name)).slice(0, 3)}</span>
-            <em className="num">{centre.n}</em>
-          </button>
-        )}
-        {ring.map(({ s, n }, i) => (
-          <button key={s.id} type="button" className={`orb-sat ${pos[i]}`} onClick={() => nav(`/redo?subject=${s.id}`)} title={`${courseTitle(s.name)}: ${n} due`}>
-            <span style={{ background: s.colour }} />
-            <em className="num">{n}</em>
-          </button>
-        ))}
-      </div>
-      <div className="glass-panel due-pop">
-        <span className="dp-value">
-          {due.length}
-          <small>due</small>
-        </span>
-        <span className="dp-delta">+{logged} logged this week</span>
-      </div>
-      <div className="h-foot">
-        <span className="pager">
-          {by.slice(0, 4).map(({ s }, i) => (
-            <i key={s.id} className={i === 0 ? 'on' : undefined} />
-          ))}
-        </span>
-        <button type="button" className="pill-dark" disabled={!due.length} onClick={() => nav(`/redo?subject=${centre?.s.id ?? ''}`)}>
-          Start redo
-        </button>
-      </div>
-    </article>
-  );
-}
-
-/* ---------- 4. Coming up (blue, rings) ---------- */
-
-function ComingCard({ data }: { data: AllData }) {
-  const today = todayKey();
-  const tests = activeSubjects(data)
-    .filter((s) => s.nextTestDate && s.nextTestDate >= today)
-    .sort((a, b) => (a.nextTestDate! < b.nextTestDate! ? -1 : 1));
-  const [first, second] = tests;
-  const avg = first ? subjectAverage(data, first.id) : null;
-  return (
-    <article className="hero blue" style={{ ['--i' as string]: 3 }}>
-      <div className="h-top">
-        <h2>Coming up</h2>
-        <ArrowBtn to={first ? `/subjects/${first.id}` : '/subjects'} label="Open course" />
-      </div>
-      {first ? (
-        <>
-          <div className="cu-row">
-            <div>
-              <span className="dots big">{avg == null ? '--' : `${Math.round(avg)}%`}</span>
-              <span className="cu-label">{courseTitle(first.name)} · target {first.targetPct}%</span>
-            </div>
-            <div className="cu-date">
-              <span className="dots big">{parseDay(first.nextTestDate!).getDate().toString().padStart(2, '0')}</span>
-              <span className="cu-label">{parseDay(first.nextTestDate!).toLocaleDateString(undefined, { month: 'short' })}</span>
-            </div>
-          </div>
-          <div className="rings">
-            <span className="ring dashed" />
-            <span className="ring solid" />
-            <span className="ring-days">
-              <span className="dots">{daysBetween(today, first.nextTestDate!)}</span>
-              <small>days</small>
-            </span>
-            {second && <span className="ring-sat" style={{ background: second.colour }} title={courseTitle(second.name)} />}
-          </div>
-          <div className="cu-row bottom">
-            <div>
-              <span className="cu-label">{second ? courseTitle(second.name) : 'Nothing after that yet'}</span>
-              <span className="dots mid">{second ? `${daysBetween(today, second.nextTestDate!)}d` : ''}</span>
-            </div>
-            {second && (
-              <div className="cu-date">
-                <span className="cu-label">{parseDay(second.nextTestDate!).toLocaleDateString(undefined, { month: 'short' })}</span>
-                <span className="dots mid">{parseDay(second.nextTestDate!).getDate().toString().padStart(2, '0')}</span>
-              </div>
-            )}
-          </div>
-        </>
-      ) : (
-        <p className="cu-empty">No tests set. Add a date on a course.</p>
-      )}
-    </article>
-  );
-}
-
-/* ---------- Chip row ---------- */
-
-function ChipRow({ data }: { data: AllData }) {
-  const nav = useNavigate();
-  const st = settings.use();
-  return (
-    <div className="chip-bar">
-      <div className="bar-group">
-        <span className="bg-label">Courses</span>
-        {activeSubjects(data).map((s) => (
-          <Link key={s.id} to={`/subjects/${s.id}`} className="bg-dot" style={{ background: s.colour }} title={courseTitle(s.name)}>
-            <span className="sr-only">{courseTitle(s.name)}</span>
-          </Link>
-        ))}
-        <Link to="/subjects" className="bg-more" aria-label="All courses">
-          <ChevronRight size={15} />
-        </Link>
-      </div>
-      <div className="bar-group">
-        <span className="bg-label">Log</span>
-        <button type="button" className="bg-icon" onClick={() => openUI({ flashLog: true })} aria-label="Log flashcards" title="Flashcards">
-          <Layers size={15} strokeWidth={2} />
-        </button>
-        <button type="button" className="bg-icon" onClick={() => openUI({ logPaper: { preset: { subjectId: st.lastSubjectId } } })} aria-label="Log a test" title="Test result">
-          <FileText size={15} strokeWidth={2} />
-        </button>
-        <button type="button" className="bg-icon" onClick={() => nav('/timer')} aria-label="Focus timer" title="Focus">
-          <Timer size={15} strokeWidth={2} />
-        </button>
-      </div>
-      <span className="bar-spacer" />
-      <button type="button" className="bar-search" onClick={() => openUI({ palette: true })}>
-        Search <kbd className="k">⌘K</kbd>
-        <Search size={15} strokeWidth={2} />
-      </button>
-    </div>
-  );
-}
-
-/* ---------- Timeline: this week, by course ---------- */
+/* ---------- Timeline: this week by course ---------- */
 
 function Timeline({ data }: { data: AllData }) {
   const [offset, setOffset] = useState(0);
   const today = todayKey();
   const ws = addDays(weekStartKey(), offset * 7);
   const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
-  const subjects = activeSubjects(data);
   const todayIdx = days.indexOf(today);
   return (
-    <section className="timeline-panel">
+    <Card className="timeline-card" index={7} style={aura('#6d5cff', '#3f6dff', { ax: '80%', ay: '0%', bx: '0%', by: '100%' })}>
       <div className="tl-head">
         <div className="tl-switch">
           <button type="button" onClick={() => setOffset((o) => o - 1)} aria-label="Previous week">
@@ -438,7 +321,7 @@ function Timeline({ data }: { data: AllData }) {
             <ChevronRight size={15} />
           </button>
         </div>
-        <div className="tl-days" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
+        <div className="tl-days">
           {days.map((d) => (
             <span key={d} className={d === today ? 'on' : undefined}>
               {parseDay(d).toLocaleDateString(undefined, { weekday: 'short' })} {parseDay(d).getDate()}
@@ -448,39 +331,38 @@ function Timeline({ data }: { data: AllData }) {
       </div>
       <div className="tl-body">
         {todayIdx >= 0 && <span className="tl-now" style={{ ['--x' as string]: (todayIdx + 0.5) / 7 }} />}
-        {subjects.map((s, i) => (
-          <TimelineRow key={s.id} data={data} subject={s} days={days} index={i} />
+        {activeSubjects(data).map((s) => (
+          <Row key={s.id} data={data} subject={s} days={days} />
         ))}
       </div>
-    </section>
+    </Card>
   );
 }
 
-function TimelineRow({ data, subject, days, index }: { data: AllData; subject: Subject; days: string[]; index: number }) {
+function Row({ data, subject, days }: { data: AllData; subject: Subject; days: string[] }) {
   const open = data.mistakes.filter((m) => m.subjectId === subject.id && !m.cleared).length;
   const avg = subjectAverage(data, subject.id);
   const { code, title } = splitCourse(subject.name);
   return (
-    <div className="tl-row" style={{ ['--i' as string]: index }}>
+    <div className="tl-row">
       <Link to={`/subjects/${subject.id}`} className="tl-course">
-        <span className="tl-swatch" style={{ background: subject.colour }} />
+        <span className="tl-swatch" style={{ ['--c' as string]: subject.colour }} />
         <span className="tl-name">
           {title}
           {code && <em>{code}</em>}
         </span>
-        <span className="round white sm num" title="Open mistakes">
+        <span className="tl-open num" title="Open mistakes">
           {open}
         </span>
         <span className="tl-avg num">{avg == null ? '–' : `${Math.round(avg)}%`}</span>
       </Link>
-      <div className="tl-cells" style={{ gridTemplateColumns: 'repeat(7, minmax(0, 1fr))' }}>
+      <div className="tl-cells">
         {days.map((d) => {
           const mins = data.sessions.filter((x) => x.subjectId === subject.id && x.date === d).reduce((a, x) => a + x.minutes, 0);
           const papers = data.papers.filter((p) => p.subjectId === subject.id && p.date === d);
-          const test = subject.nextTestDate === d;
           return (
             <div key={d} className="tl-cell">
-              {test && <span className="tl-chip test">Test</span>}
+              {subject.nextTestDate === d && <span className="tl-chip test">Test</span>}
               {papers.map((p) => (
                 <span key={p.id} className="tl-chip paper">
                   {p.kind === 'past_paper' ? 'Practice' : 'Unit test'} {Math.round(pct(p))}%
@@ -488,7 +370,7 @@ function TimelineRow({ data, subject, days, index }: { data: AllData; subject: S
               ))}
               {mins > 0 && (
                 <span className="tl-chip study" style={{ ['--c' as string]: subject.colour }}>
-                  {mins >= 60 ? `${Math.floor(mins / 60)}h${mins % 60 ? ` ${mins % 60}m` : ''}` : `${mins}m`}
+                  {fmtHours(mins)}
                 </span>
               )}
             </div>
@@ -498,4 +380,3 @@ function TimelineRow({ data, subject, days, index }: { data: AllData; subject: S
     </div>
   );
 }
-

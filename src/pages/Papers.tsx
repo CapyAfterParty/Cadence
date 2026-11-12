@@ -88,7 +88,7 @@ function PapersView({ data }: { data: AllData }) {
                     <span className="subject-dot" style={{ background: s.colour }} />
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
                   </span>
-                  <Progress value={v ?? 0} target={s.targetPct} color={v != null && v >= s.targetPct ? 'var(--green)' : undefined} />
+                  <Progress value={v ?? 0} target={s.targetPct} color={s.colour} />
                   <span className="num right small" style={{ fontWeight: 600, textAlign: 'right' }}>
                     {v == null ? '–' : `${Math.round(v)}%`}
                   </span>

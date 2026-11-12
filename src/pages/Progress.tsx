@@ -87,7 +87,7 @@ function LoopCard({ data, redoDays }: { data: AllData; redoDays: number }) {
     { label: 'Check-in', value: check.value, status: check.value >= 1 ? 'Done' : isSunday(today) ? 'Today' : 'Sunday', hue: LOOP_HUES[3] },
   ];
   return (
-    <Card className="z-card loop" index={0} tint="#b9a8e0">
+    <Card className="z-card loop" index={0} tint="#7a5cff">
       <CardHead icon={<Repeat size={15} strokeWidth={1.8} />} tone="orchid" title="This week" aside={`Day ${Math.min(7, daysBetween(weekStart, today) + 1)} of 7`} />
       <div className="loop-wrap">
         <LoopRing parts={current.parts.map((p, i) => ({ ...p, hue: LOOP_HUES[i] }))}>
@@ -120,7 +120,7 @@ function StudyCard({ data }: { data: AllData }) {
   const h = Math.floor(week / 60);
   const m = Math.round(week % 60);
   return (
-    <Card className="z-card" index={1} tint="#e6cd92">
+    <Card className="z-card" index={1} tint="#ff9a3d">
       <CardHead icon={<Timer size={15} strokeWidth={1.8} />} tone="gold" title={<Link to="/timer">Study</Link>} aside="This week" />
       <Big>
         <CountUp value={h} />
@@ -140,7 +140,7 @@ function FlashCard({ data }: { data: AllData }) {
   const days = lastNDays(7);
   const today = cards.get(todayKey()) ?? 0;
   return (
-    <Card className="z-card" index={2} tint="#b9a8e0">
+    <Card className="z-card" index={2} tint="#7a5cff">
       <CardHead
         icon={<Layers size={15} strokeWidth={1.8} />}
         tone="orchid"
@@ -171,7 +171,7 @@ function MistakesCard({ data, redoDays }: { data: AllData; redoDays: number }) {
   const logged = data.mistakes.filter((m) => days.includes(m.date)).length;
   const open = data.mistakes.filter((m) => !m.cleared).length;
   return (
-    <Card className="z-card" index={3} tint="#e3a4b1">
+    <Card className="z-card" index={3} tint="#ff4f8b">
       <CardHead icon={<CircleAlert size={15} strokeWidth={1.8} />} tone="coral" title={<Link to="/mistakes">Mistakes</Link>} aside={`${open} open`} />
       <Big unit="due">
         <CountUp value={due} />
@@ -223,7 +223,7 @@ function PapersCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const avg = subject ? subjectAverage(data, subject.id) : null;
   const papers = subject ? subjectPapers(data, subject.id) : [];
   return (
-    <Card className="z-card" index={4} tint="#9dbbdc">
+    <Card className="z-card" index={4} tint="#3d7bff">
       <CardHead icon={<FileText size={15} strokeWidth={1.8} />} tone="lagoon" title={<Link to={subject ? `/papers?subject=${subject.id}` : '/papers'}>Tests</Link>} aside="10 weeks" />
       {!data.papers.length ? (
         <Empty text="Log a paper to see the trend." action={<button type="button" className="btn sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject?.id } } })}>Log a paper</button>} />
@@ -248,7 +248,7 @@ function TargetCard({ data, subject, onPick }: { data: AllData; subject?: Subjec
   const avg = subject ? subjectAverage(data, subject.id) : null;
   const days = subject?.nextTestDate ? daysBetween(today, subject.nextTestDate) : null;
   return (
-    <Card className="z-card" index={5} tint="#9fc8a8">
+    <Card className="z-card" index={5} tint="#5fd38a">
       <CardHead icon={<Target size={15} strokeWidth={1.8} />} tone="meadow" title="Target" aside={subject ? courseTitle(subject.name) : undefined} />
       {subject ? (
         <>
@@ -283,7 +283,7 @@ function CalendarCard({ data }: { data: AllData }) {
     }
   });
   return (
-    <Card className="z-card full" index={6} tint="#9fc8a8">
+    <Card className="z-card full" index={6} tint="#5fd38a">
       <CardHead icon={<CalendarDays size={15} strokeWidth={1.8} />} tone="meadow" title="Study calendar" aside={`${fmtHours(monthMinutes(data))} this month`} />
       <div className="heat-months" style={{ gridTemplateColumns: `repeat(39, minmax(0, 1fr))` }}>
         {months.map((m) => (

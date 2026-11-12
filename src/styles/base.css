@@ -172,7 +172,6 @@ textarea {
 @keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(0.4rem);
   }
 }
 
@@ -193,13 +192,13 @@ textarea {
 }
 
 .topbar h1 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  letter-spacing: -0.035em;
+  font-size: 2.3rem;
+  font-weight: 300;
+  letter-spacing: -0.03em;
   line-height: 1.1;
   display: flex;
   align-items: center;
-  gap: var(--s3);
+  gap: var(--s3)
 }
 
 .row {
@@ -264,24 +263,62 @@ textarea {
 /* ---------- Card: a matte surface with a hairline edge ---------- */
 
 .card {
-  --tint: rgba(255, 255, 255, 0.5);
+  --tint: var(--aura-default);
+  --tint-2: var(--tint);
+  --ax: 85%;
+  --ay: 0%;
+  --bx: 10%;
+  --by: 105%;
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-width: 0;
   padding: var(--card-pad);
   border-radius: var(--r-card);
+  background: #0e0e11;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 -30px 60px -40px color-mix(in srgb, var(--tint) 60%, transparent),
+    0 28px 60px -34px color-mix(in srgb, var(--tint) 55%, transparent),
+    0 12px 30px -14px rgba(0, 0, 0, 0.8);
+  transition: box-shadow var(--t-med) var(--ease);
+  animation: card-in 600ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 40ms)
+}
+
+/* The aura: a soft colour field glowing from inside the surface. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -25%;
+  z-index: -1;
+  pointer-events: none;
   background:
-    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--tint) 10%, transparent), transparent 60%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015) 50%),
-    var(--glass);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
-  box-shadow: var(--hi), inset 0 0 0 1px var(--line), var(--shadow);
-  transition:
-    transform 500ms var(--soft),
-    box-shadow var(--t-med) var(--ease),
-    background var(--t-med) var(--ease);
-  animation: card-in 900ms var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * 60ms)
+    radial-gradient(42% 38% at var(--ax) var(--ay), var(--tint), transparent 72%),
+    radial-gradient(38% 34% at var(--bx) var(--by), color-mix(in srgb, var(--tint-2) 80%, transparent), transparent 72%);
+  filter: blur(30px);
+  opacity: var(--aura, 0.72);
+}
+
+/* Gel: the fully lit, inflated surface for hero tiles. */
+.card.juice {
+  background: color-mix(in srgb, var(--tint) 48%, #0b0b0e);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.45),
+    inset 0 0 22px 2px rgba(255, 255, 255, 0.16),
+    inset 0 -40px 80px -40px color-mix(in srgb, var(--tint-2) 80%, white),
+    0 34px 80px -34px color-mix(in srgb, var(--tint) 80%, transparent),
+    0 12px 30px -14px rgba(0, 0, 0, 0.7);
+}
+
+.card.juice::before {
+  opacity: 1;
+  filter: blur(40px);
+  background:
+    radial-gradient(45% 40% at 50% 48%, color-mix(in srgb, #1a0630 75%, var(--tint)), transparent 75%),
+    radial-gradient(60% 50% at var(--ax) var(--ay), color-mix(in srgb, var(--tint) 95%, white), transparent 70%),
+    radial-gradient(60% 55% at var(--bx) var(--by), var(--tint-2), transparent 72%);
 }
 
 .card.hoverable,
@@ -294,19 +331,21 @@ textarea {
 }
 
 .card.tilt:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow-lg);
+  transform: none
 }
 
 .card.hoverable:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--hi), inset 0 0 0 1px var(--line-strong), var(--shadow-lg)
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 -30px 60px -40px color-mix(in srgb, var(--tint) 70%, transparent),
+    0 28px 60px -30px color-mix(in srgb, var(--tint) 70%, transparent),
+    0 12px 30px -14px rgba(0, 0, 0, 0.8)
 }
 
 @keyframes card-in {
   from {
     opacity: 0;
-    transform: translateY(0.75rem) scale(0.985);
   }
 }
 
@@ -327,13 +366,13 @@ textarea {
 
 .card-head h2,
 .card-head h3 {
-  font-size: var(--fs-14);
-  font-weight: 500;
+  font-size: var(--fs-15);
+  font-weight: 400;
   letter-spacing: -0.005em;
-  color: var(--text-2);
+  color: rgba(255, 255, 255, 0.82);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: ellipsis
 }
 
 .card-head h2 a {
@@ -356,50 +395,52 @@ textarea {
 .card-icon {
   width: 2.1rem;
   height: 2.1rem;
-  border-radius: 0.85rem;
+  border-radius: 50%;
   display: grid;
   place-items: center;
   flex: none;
-  color: var(--text-2);
-  background: var(--surface-3);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.06)
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06)
 }
 
 /* Soft hued pebbles: the colour lives in the icon, the tile is a wash. */
 .tone-ember {
-  color: var(--clay);
-  background: color-mix(in srgb, var(--clay) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--clay) 20%, transparent);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .tone-orchid {
-  color: var(--lavender);
-  background: color-mix(in srgb, var(--lavender) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--lavender) 20%, transparent);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .tone-lagoon {
-  color: var(--mist);
-  background: color-mix(in srgb, var(--mist) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--mist) 20%, transparent);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .tone-coral {
-  color: var(--rose);
-  background: color-mix(in srgb, var(--rose) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--rose) 20%, transparent);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .tone-meadow {
-  color: var(--sage);
-  background: color-mix(in srgb, var(--sage) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--sage) 20%, transparent);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .tone-gold {
-  color: var(--sand);
-  background: color-mix(in srgb, var(--sand) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 248, 236, 0.08), inset 0 0 0 1px color-mix(in srgb, var(--sand) 20%, transparent);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 /* ---------- Numbers ---------- */
@@ -414,9 +455,9 @@ textarea {
 .stat-value {
   font-size: var(--fs-44);
   font-weight: 300;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums
 }
 
 .stat-value.md {
@@ -469,13 +510,11 @@ textarea {
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-1px)
+  background: rgba(255, 255, 255, 0.12)
 }
 
 .btn:active {
-  transform: translateY(1px) scale(0.97);
-  transition-duration: 80ms
+  opacity: 0.85
 }
 
 .btn:disabled {
@@ -1457,11 +1496,8 @@ button.list-item:disabled {
 }
 .topbar h1 .serif { font-weight: 400; font-size: 1.08em; letter-spacing: -0.02em; }
 
-/* Dot-matrix numerals */
-.dots {
-  font-family: var(--dots);
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 0.9;
+
+/* Dense content (tables, filter bars): the glow stays, the text keeps contrast. */
+.card.quiet {
+  --aura: 0.32;
 }

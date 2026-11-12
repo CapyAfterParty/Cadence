@@ -16,6 +16,14 @@ export const TONE_COLOUR: Record<Tone, string> = {
   gold: '#ffc04d',
 };
 
+/** Untinted cards take a colour from this set by position, so every screen glows. */
+const AURA_CYCLE = ['#7a5cff', '#ff4f97', '#3d7bff', '#ff9a3d', '#5fd38a', '#c04dff'];
+const AURA_SPOTS = [
+  { ax: '88%', ay: '0%', bx: '8%', by: '105%' },
+  { ax: '10%', ay: '0%', bx: '95%', by: '100%' },
+  { ax: '100%', ay: '60%', bx: '20%', by: '110%' },
+];
+
 const reduceMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- Card ---------- */
@@ -40,11 +48,20 @@ export function Card({
   /** A colour that glows in from the corner. */
   tint?: Tone | string;
 } & React.HTMLAttributes<HTMLElement>) {
-  const tintColour = tint ? TONE_COLOUR[tint as Tone] ?? tint : undefined;
+  const tintColour = tint ? TONE_COLOUR[tint as Tone] ?? tint : AURA_CYCLE[index % AURA_CYCLE.length];
+  const spot = AURA_SPOTS[index % AURA_SPOTS.length];
   return (
     <section
       className={cx('card', hoverable && 'hoverable', tilt && 'tilt', className)}
-      style={{ ['--i' as string]: index, ...(tintColour ? { ['--tint' as string]: tintColour } : {}), ...style }}
+      style={{
+        ['--i' as string]: index,
+        ['--tint' as string]: tintColour,
+        ['--ax' as string]: spot.ax,
+        ['--ay' as string]: spot.ay,
+        ['--bx' as string]: spot.bx,
+        ['--by' as string]: spot.by,
+        ...style,
+      }}
       onMouseMove={(e) => {
         const el = e.currentTarget;
         const r = el.getBoundingClientRect();
@@ -101,30 +118,9 @@ export function IconTile({ tone, children, size }: { tone?: Tone; children: Reac
 
 /* ---------- Numbers ---------- */
 
-/** Counts up with an expo ease, from wherever it was. */
+/** Numbers appear as they are. (Kept as a component so callers stay simple.) */
 export function CountUp({ value, decimals = 0 }: { value: number; decimals?: number }) {
-  const [shown, setShown] = useState(reduceMotion() ? value : 0);
-  const from = useRef(reduceMotion() ? value : 0);
-  useEffect(() => {
-    if (reduceMotion()) {
-      setShown(value);
-      return;
-    }
-    const start = performance.now();
-    const a = from.current;
-    let raf = 0;
-    const tick = (t: number) => {
-      const k = Math.min(1, (t - start) / 900);
-      const eased = k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
-      const v = a + (value - a) * eased;
-      setShown(v);
-      from.current = v;
-      if (k < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value]);
-  return <>{shown.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</>;
+  return <>{value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</>;
 }
 
 export function Stat({
