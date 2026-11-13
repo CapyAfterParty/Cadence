@@ -78,34 +78,36 @@
   max-width: none;
   object-fit: cover;
   user-select: none;
-  filter: saturate(1.05) blur(0.4px);
-  transition: transform 900ms var(--ease-out);
+  filter: saturate(1.05) blur(1.1px);
+  transition: transform 1100ms var(--ease-out);
 }
 
-/* Each reed: a dark edge, a lit ridge, a soft fall-off. */
+/* Each reed: a dark seam, a lit ridge, a soft fall-off. */
+.flute::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(255, 255, 255, 0.5) 12%,
+    rgba(255, 255, 255, 0.06) 42%,
+    rgba(0, 0, 0, 0.06) 72%,
+    rgba(0, 0, 0, 0.32) 100%
+  );
+  mix-blend-mode: soft-light;
+}
+
+/* Frosted haze over the whole pane, darker toward the bottom. */
 .fluted::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(
-    90deg,
-    rgba(0, 0, 0, 0.22) 0,
-    rgba(255, 255, 255, 0.28) calc(var(--sw) * 0.12),
-    rgba(255, 255, 255, 0.06) calc(var(--sw) * 0.4),
-    rgba(0, 0, 0, 0.05) calc(var(--sw) * 0.75),
-    rgba(0, 0, 0, 0.26) var(--sw)
-  );
-  mix-blend-mode: soft-light;
-}
-
-.fluted::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0, transparent 1px, transparent calc(var(--sw) - 1px), rgba(0, 0, 0, 0.18) var(--sw));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 30%, transparent 62%, rgba(13, 13, 16, 0.55) 100%);
+  backdrop-filter: blur(0.6px);
 }
 
 .pc-next {

@@ -42,18 +42,16 @@ export function Glass({
   index?: number;
   className?: string;
   style?: CSSProperties;
-  /** Landscape card: light along the edges instead of top and bottom. */
+  /** Landscape card: the dark core stretches sideways. */
   wide?: boolean;
   children: ReactNode;
 }) {
   return (
     <section
-      className={cx('hc', TONE_CLASS[tone], wide && tone !== 'smoke' && 'gel-c wide-gel', className)}
+      className={cx('hc', TONE_CLASS[tone], wide && 'wide-gel', className)}
       style={{
         ['--i' as string]: index,
         ...(colour ? { ['--c' as string]: gelColour(colour) } : {}),
-        ...(wide && tone === 'pink' ? { ['--c' as string]: '#f0228a' } : {}),
-        ...(wide && tone === 'blue' ? { ['--c' as string]: '#2f6cff' } : {}),
         ...style,
       }}
       onPointerMove={(e) => {

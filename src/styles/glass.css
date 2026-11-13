@@ -160,63 +160,101 @@
   margin-top: auto;
 }
 
-/* ---------- Gel: pink and blue ---------- */
+/* ---------- Glass slabs: gel and smoke ----------
+   A thick piece of tinted glass: the colour gathers along every edge with a
+   soft inner glow, and fades to a dark, blurred core in the middle. */
 
-.gel {
+.gel,
+.smoke {
+  background:
+    radial-gradient(60% 42% at var(--hx, 50%) var(--hy, -10%), var(--hot, transparent), transparent 72%),
+    radial-gradient(70% 26% at 50% 106%, var(--hot2, transparent), transparent 75%),
+    radial-gradient(ellipse 80% 76% at 50% 50%, var(--mid) 0%, var(--mid) 42%, transparent 100%),
+    var(--edge);
   box-shadow:
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    inset 0 0 2.2rem rgba(255, 255, 255, 0.2),
-    inset 0 -3.5rem 4rem -2rem var(--rim),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.5),
+    inset 0 0 1.1rem 0.15rem var(--rim),
+    inset 0 0 3.6rem 0.4rem var(--rim-wide),
     0 2.4rem 5rem -2.2rem var(--glow),
     0 1rem 2rem -1rem rgba(0, 0, 0, 0.6);
 }
 
-.gel:hover {
-  box-shadow:
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.6),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
-    inset 0 0 2.4rem rgba(255, 255, 255, 0.24),
-    inset 0 -3.5rem 4rem -2rem var(--rim),
-    0 2.8rem 6rem -2rem var(--glow),
-    0 1rem 2rem -1rem rgba(0, 0, 0, 0.6);
-}
-
-.gel::before {
+.gel::before,
+.smoke::before {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: 7% 12% 9%;
   z-index: 0;
-  border-radius: inherit;
+  border-radius: 50%;
   pointer-events: none;
+  background: var(--core);
+  filter: blur(3.2rem);
+  opacity: 0.96;
+}
+
+.gel:hover,
+.smoke:hover {
+  filter: brightness(1.06) saturate(1.05);
 }
 
 .gel-pink {
-  --rim: rgba(255, 170, 225, 0.75);
-  --glow: rgba(255, 30, 140, 0.7);
-  background:
-    radial-gradient(110% 34% at 50% -6%, #ff70b8 0%, #f0228a 45%, transparent 85%),
-    radial-gradient(120% 34% at 50% 106%, #ffa3dc 0%, #ef4fae 35%, transparent 80%),
-    linear-gradient(180deg, #dc1a7c 0%, #9c1168 18%, #4a0942 38%, #240521 55%, #4e0b46 70%, #b51c86 86%, #ec5cb4 100%);
-}
-
-.gel-pink::before {
-  background: radial-gradient(80% 36% at 50% 55%, rgba(14, 1, 16, 0.7), transparent 75%);
-  filter: blur(18px);
+  --edge: #c0166f;
+  --mid: #640b4f;
+  --core: #160215;
+  --rim: rgba(255, 140, 210, 0.72);
+  --rim-wide: rgba(240, 70, 170, 0.42);
+  --hot2: rgba(255, 120, 200, 0.5);
+  --glow: rgba(255, 30, 140, 0.6);
 }
 
 .gel-blue {
-  --rim: rgba(160, 200, 255, 0.85);
-  --glow: rgba(40, 110, 255, 0.75);
-  background:
-    radial-gradient(90% 55% at 85% 0%, #6fb0ff 0%, #3a7dff 35%, transparent 75%),
-    radial-gradient(100% 50% at 50% 105%, #77a6ff 0%, #2f5df0 45%, transparent 80%),
-    linear-gradient(180deg, #2f6cff 0%, #1d3fd8 35%, #0b1a7a 60%, #1636c4 82%, #4f86ff 100%);
+  --edge: #2552e6;
+  --mid: #0d1d88;
+  --core: #02052c;
+  --hot2: rgba(150, 160, 255, 0.75);
+  --rim: rgba(160, 195, 255, 0.72);
+  --rim-wide: rgba(90, 140, 255, 0.4);
+  --glow: rgba(40, 110, 255, 0.65);
+  --hot: rgba(110, 185, 255, 0.95);
+  --hx: 100%;
+  --hy: 0%;
 }
 
-.gel-blue::before {
-  background: radial-gradient(70% 38% at 45% 55%, rgba(2, 6, 30, 0.6), transparent 75%);
-  filter: blur(16px);
+.smoke {
+  --edge: #6e6e75;
+  --mid: #26262b;
+  --core: #000;
+  --rim: rgba(235, 235, 245, 0.38);
+  --rim-wide: rgba(200, 200, 215, 0.16);
+  --glow: rgba(0, 0, 0, 0.9);
+}
+
+/* A gel in any colour (courses use their own). */
+.gel-c {
+  --edge: color-mix(in srgb, var(--c) 88%, black);
+  --mid: color-mix(in srgb, var(--c) 42%, black);
+  --core: color-mix(in srgb, var(--c) 8%, black);
+  --rim: color-mix(in srgb, color-mix(in srgb, var(--c) 55%, white) 72%, transparent);
+  --rim-wide: color-mix(in srgb, var(--c) 40%, transparent);
+  --glow: color-mix(in srgb, var(--c) 60%, transparent);
+}
+
+.gel-violet {
+  --c: #7a4dff;
+}
+
+.gel-orange {
+  --c: #ff7a2f;
+}
+
+.gel-green {
+  --c: #2fbf71;
+}
+
+/* Landscape slabs keep the same edge light; the core stretches sideways. */
+.wide-gel::before {
+  inset: 18% 14% 20%;
 }
 
 /* Dot matrix */
@@ -300,32 +338,6 @@
   background: #fff;
 }
 
-/* ---------- Smoky glass: mistakes in orbit ---------- */
-
-.smoke {
-  background:
-    radial-gradient(60% 34% at 50% 52%, rgba(0, 0, 0, 0.75), transparent 75%),
-    radial-gradient(90% 40% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 70%),
-    radial-gradient(90% 45% at 50% 100%, rgba(255, 255, 255, 0.16), transparent 70%),
-    linear-gradient(180deg, #4a4a52 0%, #2a2a30 40%, #1b1b20 65%, #3a3a42 100%);
-  box-shadow:
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.4),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
-    inset 0 0 2rem rgba(255, 255, 255, 0.1),
-    0 2.2rem 4.5rem -2.2rem rgba(0, 0, 0, 0.95);
-}
-
-.smoke::before {
-  content: '';
-  position: absolute;
-  inset: 12% 8% 20%;
-  z-index: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 0, 0, 0.55), transparent 70%);
-  filter: blur(24px);
-  pointer-events: none;
-}
-
 .mode-pill {
   position: relative;
   height: 2.2rem;
@@ -400,50 +412,6 @@
   background: #000;
 }
 
-
-/* A gel in any colour (courses use their own). */
-.gel-c {
-  --rim: color-mix(in srgb, var(--c) 55%, white);
-  --glow: color-mix(in srgb, var(--c) 70%, transparent);
-  background:
-    radial-gradient(110% 34% at 50% -6%, color-mix(in srgb, var(--c) 65%, white) 0%, var(--c) 45%, transparent 85%),
-    radial-gradient(120% 34% at 50% 106%, color-mix(in srgb, var(--c) 55%, white) 0%, var(--c) 35%, transparent 80%),
-    linear-gradient(
-      180deg,
-      var(--c) 0%,
-      color-mix(in srgb, var(--c) 62%, black) 18%,
-      color-mix(in srgb, var(--c) 32%, black) 38%,
-      color-mix(in srgb, var(--c) 16%, black) 55%,
-      color-mix(in srgb, var(--c) 32%, black) 70%,
-      color-mix(in srgb, var(--c) 78%, black) 86%,
-      color-mix(in srgb, var(--c) 82%, white) 100%
-    );
-}
-
-.gel-c::before {
-  background: radial-gradient(80% 36% at 50% 55%, rgba(8, 2, 14, 0.6), transparent 75%);
-  filter: blur(18px);
-}
-
-.gel-violet {
-  --c: #7a4dff;
-}
-
-.gel-orange {
-  --c: #ff7a2f;
-}
-
-.gel-green {
-  --c: #2fbf71;
-}
-
-/* Wide gel: the light runs along the top and bottom edges. */
-.gel-c.wide-gel {
-  background:
-    radial-gradient(70% 60% at 85% -10%, color-mix(in srgb, var(--c) 65%, white) 0%, var(--c) 40%, transparent 80%),
-    radial-gradient(70% 55% at 10% 115%, color-mix(in srgb, var(--c) 55%, white) 0%, var(--c) 35%, transparent 80%),
-    linear-gradient(180deg, color-mix(in srgb, var(--c) 75%, black) 0%, color-mix(in srgb, var(--c) 22%, black) 50%, color-mix(in srgb, var(--c) 60%, black) 100%);
-}
 
 /* Dark glass panel for working areas (lists, tables, forms). */
 .panel {

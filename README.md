@@ -62,7 +62,7 @@ The app asks the browser for persistent storage. Export a JSON backup from Setti
 Dark, glassy and vivid, after the reference dashboard.
 
 - **Mark:** an ensō, the single brushstroke circle. The favicon is the white ensō on a pink-violet-blue glass tile (`public/summit-icon.svg`, with PNG copies for Safari).
-- **Materials (`src/styles/glass.css`, `src/components/glass.tsx`):** gel cards (pink, blue, violet, or any course colour) lit at the top and bottom edges with a dark centre; smoky grey glass; dark glass panels with a coloured glow. A soft light follows the cursor.
+- **Materials (`src/styles/glass.css`, `src/components/glass.tsx`):** gel slabs (pink, blue, violet, or any course colour) whose colour gathers along every edge with an inner glow and fades to a dark, blurred core; reeded glass with thin uneven ribs that smear the photo; smoky grey glass; dark glass panels with a coloured glow. A soft light follows the cursor.
 - **Numbers:** dot-matrix numerals (Doto, round dots) for headline figures, thin Outfit for the rest.
 - **Today:** four tall cards (study dot matrix, plan under reeded glass over your photo, mistakes in orbit, upcoming tests in rings), a strip of quick controls, and the week's timeline.
 - **Other screens:** a row of glass cards on top, then wide working panels: filter rail and table on Mistakes, a big dot-matrix clock on Focus, course-coloured gels on Courses and Redo.

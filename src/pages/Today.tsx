@@ -158,39 +158,55 @@ function StudyCard({ data }: { data: AllData }) {
 
 /* ---------- 2. The plan, under reeded glass ---------- */
 
-function Fluted({ src, strips = 20 }: { src: string; strips?: number }) {
+/** Repeatable noise so the reeds keep their shape between renders. */
+const noise = (i: number, k: number) => {
+  const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+/** Reeded glass: many thin, uneven ribs, each smearing its slice of the photo vertically. */
+function Fluted({ src }: { src: string }) {
   const [ref, w, h] = useSize<HTMLDivElement>();
   const [shift, setShift] = useState(0);
-  const sw = w / strips;
+  const ribs = useMemo(() => {
+    if (!w) return [];
+    const out: { x: number; rw: number; dy: number; sx: number; sy: number; k: number }[] = [];
+    const base = Math.max(7, w / 46);
+    let x = 0;
+    for (let i = 0; x < w; i++) {
+      const rw = base * (0.55 + noise(i, 1) * 0.95);
+      out.push({ x, rw, dy: (noise(i, 2) - 0.5) * h * 0.16, sx: 3 + noise(i, 3) * 3, sy: 1.08 + noise(i, 4) * 0.28, k: 0.4 + noise(i, 5) * 1.2 });
+      x += rw;
+    }
+    return out;
+  }, [w, h]);
   return (
     <div
       ref={ref}
       className="fluted"
-      style={vars({ '--sw': `${sw}px` })}
       onPointerMove={(e) => {
         const r = e.currentTarget.getBoundingClientRect();
-        setShift(((e.clientX - r.left) / r.width - 0.5) * sw * 1.6);
+        setShift(((e.clientX - r.left) / r.width - 0.5) * 14);
       }}
       onPointerLeave={() => setShift(0)}
       aria-hidden="true"
     >
-      {w > 0 &&
-        Array.from({ length: strips }, (_, i) => (
-          <div key={i} className="flute" style={{ left: i * sw, width: Math.ceil(sw) + 1 }}>
-            <img
-              src={src}
-              alt=""
-              draggable={false}
-              style={{
-                width: w,
-                height: h,
-                left: -i * sw,
-                transformOrigin: `${i * sw + sw / 2}px 50%`,
-                transform: `translateX(${shift * (0.6 + (i % 3) * 0.2)}px) scaleX(2.1) scaleY(1.04)`,
-              }}
-            />
-          </div>
-        ))}
+      {ribs.map((r, i) => (
+        <div key={i} className="flute" style={{ left: r.x, width: Math.ceil(r.rw) + 0.5 }}>
+          <img
+            src={src}
+            alt=""
+            draggable={false}
+            style={{
+              width: w,
+              height: h,
+              left: -r.x,
+              transformOrigin: `${r.x + r.rw / 2}px 50%`,
+              transform: `translate(${shift * r.k}px, ${r.dy}px) scale(${r.sx}, ${r.sy})`,
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 }
