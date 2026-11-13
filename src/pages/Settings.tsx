@@ -206,9 +206,9 @@ function AppearanceSection() {
   const photos = useScans('hero', 'hero');
   const input = useRef<HTMLInputElement>(null);
   return (
-    <Section id="appearance" title="Appearance" desc="Home is deliberately quiet. You can add one photo of your own behind it." index={3}>
+    <Section id="appearance" title="Appearance" desc="The glass card on Today shows a photo through reeded glass." index={3}>
       <div className="s-rows">
-        <Row title="Home background" desc={photos?.length ? 'Your photo, softly dimmed behind Home.' : 'Plain and calm.'}>
+        <Row title="Glass card photo" desc={photos?.length ? 'Your photo, behind the reeded glass on Today.' : 'The built-in summit at dusk.'}>
           <Button size="sm" onClick={() => input.current?.click()}>
             <Upload size={14} strokeWidth={SW} /> {photos?.length ? 'Replace photo' : 'Use my photo'}
           </Button>

@@ -3,7 +3,7 @@
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import './fancy.css';
 
-export type Hue = 'clay' | 'sage' | 'mist' | 'lavender' | 'sand' | 'rose';
+export type Hue = 'clay' | 'sage' | 'mist' | 'lavender' | 'sand' | 'rose' | 'white';
 
 export const HUES: Record<Hue, [string, string]> = {
   clay: ['#ffb3d1', '#ff4f97'],
@@ -12,6 +12,7 @@ export const HUES: Record<Hue, [string, string]> = {
   lavender: ['#d9ccff', '#8a6cff'],
   sand: ['#ffe0a8', '#ff9a3d'],
   rose: ['#ffc2d2', '#ff5c7a'],
+  white: ['#ffffff', '#ffffff'],
 };
 
 export function useSize<T extends HTMLElement>() {

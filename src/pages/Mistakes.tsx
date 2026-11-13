@@ -4,12 +4,15 @@ import { Download, ListPlus, Plus, RotateCcw, Trash2 } from 'lucide-react';
 import { db, useData, type AllData } from '../db/db';
 import { ERROR_TYPES, WEAKNESSES, errorLabel, type ErrorType, type Mistake, type Weakness } from '../db/types';
 import { deleteMistakes } from '../db/ops';
-import { fmtDay, relDays, todayKey } from '../lib/dates';
+import { addDays, fmtDay, relDays, todayKey } from '../lib/dates';
 import { ankiCsv, downloadText, tagify } from '../lib/download';
-import { isDue, lastAttemptMap, sortForRedo } from '../lib/stats';
+import { activeSubjects, isDue, lastAttemptMap, sortForRedo } from '../lib/stats';
 import { openUI, settings, toast } from '../lib/state';
-import { Button, Card, Empty, ErrorPill, PageSkeleton, Segmented, WeaknessPill, nextWeakness } from '../components/ui';
-import { SubjectSelect, TopicSelect } from '../components/pickers';
+import { Button, Empty, ErrorPill, PageSkeleton, Segmented, WeaknessPill, cx, nextWeakness } from '../components/ui';
+import { TopicSelect } from '../components/pickers';
+import { DotNum, DotStrip, Glass, GlassHead, Panel } from '../components/glass';
+import { courseTitle } from '../lib/course';
+import './pages.css';
 import { Topbar } from '../components/Topbar';
 import { AutoInput, AutoTextarea } from '../components/auto';
 import { ScanGrid, ScanUploadButton } from '../components/Scans';
@@ -124,50 +127,69 @@ function MistakesView({ data }: { data: AllData }) {
         </Link>
       </Topbar>
 
-      <Card index={0} tint="#6d5cff" className="quiet">
-        <div className="row" style={{ gap: 12 }}>
-          <div style={{ width: 180 }}>
-            <SubjectSelect data={data} value={subjectId} onChange={setSubject} includeAll size="sm" />
-          </div>
-          <div style={{ width: 180 }}>
-            <TopicSelect data={data} subjectId={subjectId} value={topicId} onChange={setTopicId} size="sm" allowAny />
-          </div>
-          <select className="select sm" style={{ width: 170 }} value={errorType} onChange={(e) => setErrorType(e.target.value as ErrorType | '')} aria-label="Error type">
-            <option value="">All error types</option>
-            {ERROR_TYPES.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.short}
-              </option>
-            ))}
-          </select>
-          <select className="select sm" style={{ width: 150 }} value={weakness} onChange={(e) => setWeakness(e.target.value as Weakness | '')} aria-label="Weakness">
-            <option value="">Any weakness</option>
-            {WEAKNESSES.map((w) => (
-              <option key={w} value={w}>
-                {w[0].toUpperCase() + w.slice(1)}
-              </option>
-            ))}
-          </select>
-          <Segmented
-            label="Status"
-            value={status}
-            onChange={setStatus}
-            options={[
-              { value: 'open', label: 'Open' },
-              { value: 'due', label: 'Due' },
-              { value: 'cleared', label: 'Cleared' },
-              { value: 'all', label: 'All' },
-            ]}
-          />
-          <select className="select sm" style={{ width: 150, marginLeft: 'auto' }} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sort">
-            <option value="due">Most overdue</option>
-            <option value="newest">Newest</option>
-            <option value="weakness">Weakest</option>
-          </select>
-        </div>
-      </Card>
+      <MistakeHero data={data} last={last} redoDays={st.redoDays} onStatus={setStatus} redoLink={redoLink} />
 
-      <Card index={1} tint="#6d5cff" className="quiet">
+      <div className="m-layout">
+        <aside className="panel filter-rail" style={{ ['--i' as string]: 4 }}>
+          <span className="fr-label">Course</span>
+          <button type="button" className={cx('fr-item', !subjectId && 'on')} onClick={() => setSubject('')}>
+            <i className="fr-dot all" />
+            <span>All courses</span>
+            <b className="num">{data.mistakes.filter((m) => !m.cleared).length}</b>
+          </button>
+          {activeSubjects(data).map((sub) => (
+            <button key={sub.id} type="button" className={cx('fr-item', subjectId === sub.id && 'on')} onClick={() => setSubject(sub.id)} style={{ ['--c' as string]: sub.colour }}>
+              <i className="fr-dot" />
+              <span>{courseTitle(sub.name)}</span>
+              <b className="num">{data.mistakes.filter((m) => m.subjectId === sub.id && !m.cleared).length}</b>
+            </button>
+          ))}
+          {subjectId && (
+            <>
+              <span className="fr-label">Topic</span>
+              <TopicSelect data={data} subjectId={subjectId} value={topicId} onChange={setTopicId} size="sm" allowAny />
+            </>
+          )}
+          <span className="fr-label">Error type</span>
+          <button type="button" className={cx('fr-item', !errorType && 'on')} onClick={() => setErrorType('')}>
+            <span>Any error</span>
+          </button>
+          {ERROR_TYPES.map((o) => (
+            <button key={o.value} type="button" className={cx('fr-item', errorType === o.value && 'on')} onClick={() => setErrorType(o.value)}>
+              <span>{o.short}</span>
+              <b className="num">{data.mistakes.filter((m) => !m.cleared && m.errorType === o.value && (!subjectId || m.subjectId === subjectId)).length}</b>
+            </button>
+          ))}
+          <span className="fr-label">Weakness</span>
+          <div className="fr-chips">
+            {(['', ...WEAKNESSES] as (Weakness | '')[]).map((w) => (
+              <button key={w || 'any'} type="button" className={cx('fr-chip', weakness === w && 'on', w)} onClick={() => setWeakness(w)}>
+                {w ? w[0].toUpperCase() + w.slice(1) : 'Any'}
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        <Panel index={5} className="m-table aura-violet">
+          <div className="m-tools">
+            <Segmented
+              label="Status"
+              value={status}
+              onChange={setStatus}
+              options={[
+                { value: 'open', label: 'Open' },
+                { value: 'due', label: 'Due' },
+                { value: 'cleared', label: 'Cleared' },
+                { value: 'all', label: 'All' },
+              ]}
+            />
+            <span className="m-count num">{rows.length} shown</span>
+            <select className="select sm" style={{ width: 150, marginLeft: 'auto' }} value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sort">
+              <option value="due">Most overdue</option>
+              <option value="newest">Newest</option>
+              <option value="weakness">Weakest</option>
+            </select>
+          </div>
         {rows.length === 0 ? (
           <Empty
             text={data.mistakes.length ? 'No mistakes match these filters.' : 'No mistakes yet. Every one you log becomes practice.'}
@@ -253,7 +275,8 @@ function MistakesView({ data }: { data: AllData }) {
             </table>
           </div>
         )}
-      </Card>
+        </Panel>
+      </div>
 
       {selected.size > 0 && (
         <div className="bulkbar">
@@ -279,6 +302,88 @@ function MistakesView({ data }: { data: AllData }) {
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+function MistakeHero({ data, last, redoDays, onStatus, redoLink }: { data: AllData; last: Map<string, string>; redoDays: number; onStatus: (s: Status) => void; redoLink: string }) {
+  const today = todayKey();
+  const open = data.mistakes.filter((m) => !m.cleared);
+  const due = open.filter((m) => isDue(m, last, redoDays, today));
+  const monthStart = today.slice(0, 8) + '01';
+  const clearedMonth = new Set(data.attempts.filter((a) => a.correct && a.date >= monthStart).map((a) => a.mistakeId)).size;
+  const withCards = data.mistakes.filter((m) => m.cardMade).length;
+  const cardPct = data.mistakes.length ? Math.round((withCards / data.mistakes.length) * 100) : 0;
+  const days = Array.from({ length: 7 }, (_, i) => addDays(today, i - 6));
+  const redoneOn = new Set(data.attempts.map((a) => a.date));
+  const byType = ERROR_TYPES.map((t) => ({ ...t, n: open.filter((m) => m.errorType === t.value).length }));
+  const maxType = Math.max(1, ...byType.map((t) => t.n));
+  return (
+    <div className="hero-row short">
+      <Glass tone="pink" index={0}>
+        <GlassHead title="Due now">
+          <Link to={redoLink} className="white-pill small">
+            <RotateCcw size={14} strokeWidth={2} /> Redo
+          </Link>
+        </GlassHead>
+        <DotNum big className="lead">
+          {due.length}
+        </DotNum>
+        <span className="label-dim">waiting {redoDays}+ days since the last try</span>
+        <div className="hero-foot">
+          <span className="label-dim">Redo days, last week</span>
+          <DotStrip values={days.map((d) => redoneOn.has(d))} current={6} />
+        </div>
+      </Glass>
+      <Glass tone="smoke" index={1}>
+        <GlassHead title="Open">
+          <button type="button" className="mode-pill" onClick={() => onStatus('open')}>
+            Show
+            <i />
+          </button>
+        </GlassHead>
+        <div className="hc-figure">
+          <span className="thin-num">{open.length}</span>
+          <span className="hc-unit">by error type</span>
+        </div>
+        <div className="type-bars">
+          {byType.map((t) => (
+            <div key={t.value} className="tb-row">
+              <span>{t.short}</span>
+              <span className="tb-track">
+                <i style={{ width: `${(t.n / maxType) * 100}%` }} />
+              </span>
+              <b className="num">{t.n}</b>
+            </div>
+          ))}
+        </div>
+      </Glass>
+      <Glass tone="blue" index={2}>
+        <GlassHead title="Cleared">
+          <button type="button" className="mode-pill" onClick={() => onStatus('cleared')}>
+            Show
+            <i />
+          </button>
+        </GlassHead>
+        <DotNum big className="lead">
+          {clearedMonth}
+        </DotNum>
+        <span className="label-dim">right on the redo, this month</span>
+        <div className="hero-foot">
+          <span className="label-dim">{data.mistakes.filter((m) => m.cleared).length} cleared of {data.mistakes.length} logged</span>
+        </div>
+      </Glass>
+      <Glass tone="violet" index={3}>
+        <GlassHead title="Anki cards" />
+        <DotNum big className="lead">
+          {cardPct}
+          <small>%</small>
+        </DotNum>
+        <span className="label-dim">of mistakes have a card</span>
+        <div className="hero-foot">
+          <span className="label-dim">Select rows below to export them as Anki CSV</span>
+        </div>
+      </Glass>
     </div>
   );
 }

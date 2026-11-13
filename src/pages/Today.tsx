@@ -1,9 +1,8 @@
-import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowUpRight,
   CalendarCheck,
   CalendarClock,
   Check,
@@ -32,6 +31,7 @@ import { openUI, settings, timer } from '../lib/state';
 import { cx, Skeleton } from '../components/ui';
 import { useSize } from '../components/charts/fancy';
 import { SUMMIT_ART, useHomePhoto } from '../components/Backdrop';
+import { CornerLink, Glass } from '../components/glass';
 import { startStudy, stopStudy } from '../features/timerActions';
 import { timerSeconds, useNow } from '../features/TimerController';
 import './today.css';
@@ -81,30 +81,13 @@ function Home({ data }: { data: AllData }) {
   );
 }
 
-/* Cards follow the cursor with a soft specular light. */
-function HomeCard({ className, index, children, style }: { className: string; index: number; children: ReactNode; style?: CSSProperties }) {
-  const ref = useRef<HTMLElement>(null);
+function HomeCard({ className, index, children }: { className: string; index: number; children: ReactNode }) {
+  const tone = className.includes('gel-pink') ? 'pink' : className.includes('gel-blue') ? 'blue' : className.includes('smoke') ? 'smoke' : 'plain';
+  const extra = className.replace(/gel-pink|gel-blue|gel|smoke/g, '').trim();
   return (
-    <section
-      ref={ref}
-      className={cx('hc', className)}
-      style={{ ['--i' as string]: index, ...style }}
-      onPointerMove={(e) => {
-        const r = e.currentTarget.getBoundingClientRect();
-        e.currentTarget.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`);
-        e.currentTarget.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`);
-      }}
-    >
+    <Glass tone={tone} index={index} className={extra || undefined}>
       {children}
-    </section>
-  );
-}
-
-function CornerLink({ to, label }: { to: string; label: string }) {
-  return (
-    <Link to={to} className="hc-corner" aria-label={label} title={label}>
-      <ArrowUpRight size={16} strokeWidth={2} />
-    </Link>
+    </Glass>
   );
 }
 

@@ -1,0 +1,521 @@
+/* The glass kit: gel, smoky and dark glass cards, dot-matrix numerals.
+   Used by Today and every other screen so they share one material. */
+
+/* ---------- Glass cards (shared) ---------- */
+
+.hc {
+  --mx: 50%;
+  --my: 20%;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.35rem 1.35rem 1.45rem;
+  border-radius: 2.1rem;
+  color: #fff;
+  transform: translateZ(0);
+  transition:
+    transform 700ms var(--ease-out),
+    box-shadow 700ms var(--ease-out),
+    filter 700ms var(--ease-out);
+  animation: hc-in 1100ms var(--ease-out) both;
+  animation-delay: calc(var(--i) * 90ms);
+}
+
+@keyframes hc-in {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.985);
+    filter: blur(8px);
+  }
+}
+
+.hc:hover {
+  transform: translateY(-4px);
+}
+
+/* Specular light that follows the cursor across the glass. */
+.hc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(28rem 22rem at var(--mx) var(--my), rgba(255, 255, 255, 0.13), transparent 60%);
+  opacity: 0;
+  transition: opacity 600ms var(--ease-out);
+}
+
+.hc:hover::after {
+  opacity: 1;
+}
+
+.hc > * {
+  position: relative;
+  z-index: 2;
+}
+
+.hc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.6rem;
+}
+
+.hc-title {
+  font-size: var(--fs-15);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.hc-corner {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #0b0b10;
+  background: #fff;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.45);
+  transition: transform 500ms var(--ease-out);
+}
+
+.hc-corner:hover {
+  transform: rotate(45deg);
+}
+
+.hc-figure {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-top: 1.6rem;
+}
+
+.thin-num {
+  font-size: 2.3rem;
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hc-unit {
+  font-size: var(--fs-12);
+  color: rgba(255, 255, 255, 0.62);
+  align-self: flex-start;
+  margin-top: 0.3rem;
+}
+
+.hc-legend {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-self: flex-start;
+  font-size: var(--fs-11);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hc-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lg-dot,
+.lg-ring {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.lg-ring {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+}
+
+/* Dot-matrix numerals */
+.dot-num {
+  font-family: 'Doto Variable', 'Doto', var(--mono);
+  font-weight: 900;
+  font-variation-settings: 'ROND' 100;
+  font-size: 2.1rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dot-num small {
+  font-size: 0.5em;
+  margin: 0 0.18em 0 0.04em;
+  opacity: 0.55;
+}
+
+.dot-num.big {
+  font-size: 2.7rem;
+  margin-top: auto;
+}
+
+/* ---------- Gel: pink and blue ---------- */
+
+.gel {
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 0 2.2rem rgba(255, 255, 255, 0.2),
+    inset 0 -3.5rem 4rem -2rem var(--rim),
+    0 2.4rem 5rem -2.2rem var(--glow),
+    0 1rem 2rem -1rem rgba(0, 0, 0, 0.6);
+}
+
+.gel:hover {
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 0 0 2.4rem rgba(255, 255, 255, 0.24),
+    inset 0 -3.5rem 4rem -2rem var(--rim),
+    0 2.8rem 6rem -2rem var(--glow),
+    0 1rem 2rem -1rem rgba(0, 0, 0, 0.6);
+}
+
+.gel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.gel-pink {
+  --rim: rgba(255, 170, 225, 0.75);
+  --glow: rgba(255, 30, 140, 0.7);
+  background:
+    radial-gradient(110% 34% at 50% -6%, #ff70b8 0%, #f0228a 45%, transparent 85%),
+    radial-gradient(120% 34% at 50% 106%, #ffa3dc 0%, #ef4fae 35%, transparent 80%),
+    linear-gradient(180deg, #dc1a7c 0%, #9c1168 18%, #4a0942 38%, #240521 55%, #4e0b46 70%, #b51c86 86%, #ec5cb4 100%);
+}
+
+.gel-pink::before {
+  background: radial-gradient(80% 36% at 50% 55%, rgba(14, 1, 16, 0.7), transparent 75%);
+  filter: blur(18px);
+}
+
+.gel-blue {
+  --rim: rgba(160, 200, 255, 0.85);
+  --glow: rgba(40, 110, 255, 0.75);
+  background:
+    radial-gradient(90% 55% at 85% 0%, #6fb0ff 0%, #3a7dff 35%, transparent 75%),
+    radial-gradient(100% 50% at 50% 105%, #77a6ff 0%, #2f5df0 45%, transparent 80%),
+    linear-gradient(180deg, #2f6cff 0%, #1d3fd8 35%, #0b1a7a 60%, #1636c4 82%, #4f86ff 100%);
+}
+
+.gel-blue::before {
+  background: radial-gradient(70% 38% at 45% 55%, rgba(2, 6, 30, 0.6), transparent 75%);
+  filter: blur(16px);
+}
+
+/* Dot matrix */
+.matrix {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1.35rem 0;
+  justify-items: center;
+  margin: auto 0.2rem 0;
+  padding-top: 1.2rem;
+}
+
+.mx {
+  width: 0.66rem;
+  height: 0.66rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.2px rgba(255, 255, 255, 0.7);
+  animation: mx-in 700ms var(--ease-out) both;
+  animation-delay: calc(400ms + var(--d) * 22ms);
+}
+
+.mx.on {
+  background: #fff;
+  box-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.55);
+}
+
+.mx.hot {
+  box-shadow: 0 0 0.9rem rgba(255, 255, 255, 0.95), 0 0 0.2rem #fff;
+}
+
+.mx.now {
+  outline: 1.5px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 3px;
+}
+
+.mx.future {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+@keyframes mx-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  margin: 1.8rem 0 auto;
+}
+
+.pager button {
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.8);
+  background: transparent;
+  cursor: pointer;
+  transition: background 300ms var(--ease-out);
+}
+
+.pager button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pager button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.pager-bar {
+  width: 1.8rem;
+  height: 3px;
+  border-radius: 3px;
+  background: #fff;
+}
+
+/* ---------- Smoky glass: mistakes in orbit ---------- */
+
+.smoke {
+  background:
+    radial-gradient(60% 34% at 50% 52%, rgba(0, 0, 0, 0.75), transparent 75%),
+    radial-gradient(90% 40% at 50% 0%, rgba(255, 255, 255, 0.2), transparent 70%),
+    radial-gradient(90% 45% at 50% 100%, rgba(255, 255, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, #4a4a52 0%, #2a2a30 40%, #1b1b20 65%, #3a3a42 100%);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    inset 0 0 2rem rgba(255, 255, 255, 0.1),
+    0 2.2rem 4.5rem -2.2rem rgba(0, 0, 0, 0.95);
+}
+
+.smoke::before {
+  content: '';
+  position: absolute;
+  inset: 12% 8% 20%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.55), transparent 70%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.mode-pill {
+  position: relative;
+  height: 2.2rem;
+  padding: 0 1.1rem 0.15rem;
+  border: 0;
+  border-radius: var(--r-full);
+  font: inherit;
+  font-size: var(--fs-12);
+  color: #fff;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  transition: background 300ms var(--ease-out);
+}
+
+.mode-pill:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.mode-pill i {
+  position: absolute;
+  left: 50%;
+  bottom: 0.3rem;
+  width: 0.9rem;
+  height: 2px;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  background: #fff;
+}
+
+.hc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.foot-dots {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.foot-dots i {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 400ms var(--ease-out);
+}
+
+.foot-dots i.on {
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+}
+
+.dark-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 2.6rem;
+  padding: 0 1.3rem;
+  border-radius: var(--r-full);
+  font-size: var(--fs-13);
+  text-decoration: none;
+  color: #fff;
+  background: rgba(8, 8, 10, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  transition: background 300ms var(--ease-out);
+}
+
+.dark-pill:hover {
+  background: #000;
+}
+
+
+/* A gel in any colour (courses use their own). */
+.gel-c {
+  --rim: color-mix(in srgb, var(--c) 55%, white);
+  --glow: color-mix(in srgb, var(--c) 70%, transparent);
+  background:
+    radial-gradient(110% 34% at 50% -6%, color-mix(in srgb, var(--c) 65%, white) 0%, var(--c) 45%, transparent 85%),
+    radial-gradient(120% 34% at 50% 106%, color-mix(in srgb, var(--c) 55%, white) 0%, var(--c) 35%, transparent 80%),
+    linear-gradient(
+      180deg,
+      var(--c) 0%,
+      color-mix(in srgb, var(--c) 62%, black) 18%,
+      color-mix(in srgb, var(--c) 32%, black) 38%,
+      color-mix(in srgb, var(--c) 16%, black) 55%,
+      color-mix(in srgb, var(--c) 32%, black) 70%,
+      color-mix(in srgb, var(--c) 78%, black) 86%,
+      color-mix(in srgb, var(--c) 82%, white) 100%
+    );
+}
+
+.gel-c::before {
+  background: radial-gradient(80% 36% at 50% 55%, rgba(8, 2, 14, 0.6), transparent 75%);
+  filter: blur(18px);
+}
+
+.gel-violet {
+  --c: #7a4dff;
+}
+
+.gel-orange {
+  --c: #ff7a2f;
+}
+
+.gel-green {
+  --c: #2fbf71;
+}
+
+/* Wide gel: the light runs along the top and bottom edges. */
+.gel-c.wide-gel {
+  background:
+    radial-gradient(70% 60% at 85% -10%, color-mix(in srgb, var(--c) 65%, white) 0%, var(--c) 40%, transparent 80%),
+    radial-gradient(70% 55% at 10% 115%, color-mix(in srgb, var(--c) 55%, white) 0%, var(--c) 35%, transparent 80%),
+    linear-gradient(180deg, color-mix(in srgb, var(--c) 75%, black) 0%, color-mix(in srgb, var(--c) 22%, black) 50%, color-mix(in srgb, var(--c) 60%, black) 100%);
+}
+
+/* Dark glass panel for working areas (lists, tables, forms). */
+.panel {
+  position: relative;
+  isolation: isolate;
+  padding: 1.4rem 1.5rem;
+  border-radius: 2rem;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  animation: hc-in 1100ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: var(--fs-15);
+  font-weight: 500;
+}
+
+.panel-head .aside {
+  margin-left: auto;
+  font-size: var(--fs-12);
+  color: var(--text-3);
+}
+
+.label-dim {
+  font-size: var(--fs-11);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* A row of glass cards at the top of a screen. */
+.hero-row {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  gap: 1.15rem;
+}
+
+.hero-row > .hc {
+  min-height: 21rem;
+}
+
+@media (max-width: 1280px) {
+  .hero-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hc,
+  .mx,
+  .panel {
+    animation: none;
+  }
+}
+
+.dot-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+}

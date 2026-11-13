@@ -9,6 +9,7 @@ import '@fontsource/instrument-serif/400-italic.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/app.css';
+import './styles/glass.css';
 import App from './App';
 
 // Ask the browser not to evict our IndexedDB data under storage pressure.
