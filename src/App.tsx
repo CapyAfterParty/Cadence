@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { Check, Undo2 } from 'lucide-react';
 import { Sidebar } from './components/Sidebar';
-import { HeroPhoto } from './components/Backdrop';
 import { Button } from './components/ui';
 import { Palette } from './features/Search';
 import { BulkMistakes, QuickAddMistake } from './features/MistakeForms';
@@ -119,7 +118,6 @@ function AppShell() {
   useAutoLock();
   return (
     <>
-      <HeroPhoto />
       <div className="shell">
         <Sidebar />
         <main className="main">
