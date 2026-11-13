@@ -1,12 +1,15 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { BarChart3, CheckCircle2, Circle, FileText, ListPlus, Trash2, TrendingUp, Zap } from 'lucide-react';
+import { FileText, ListPlus, Trash2, Zap } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
 import { deletePaper } from '../db/ops';
 import { addDays, fmtDay, todayKey, weekStartKey } from '../lib/dates';
-import { activeSubjects, pct, subjectPapers } from '../lib/stats';
+import { activeSubjects, pct, subjectAverage, subjectPapers } from '../lib/stats';
 import { openUI, settings } from '../lib/state';
-import { Button, Card, CardHead, Chip, Empty, PageSkeleton, Progress } from '../components/ui';
+import { Button, PageSkeleton } from '../components/ui';
+import { DotNum, DotStrip, Glass, GlassHead, Panel } from '../components/glass';
+import { courseTitle, splitCourse } from '../lib/course';
+import './pages.css';
 import { Topbar } from '../components/Topbar';
 import { MultiLine } from '../components/charts/fancy';
 import { ScanGrid, ScanUploadButton } from '../components/Scans';
@@ -42,6 +45,7 @@ function PapersView({ data }: { data: AllData }) {
   const timedThisWeek = data.papers.filter((p) => p.timed && p.date >= weekStart && p.date <= weekEnd);
   const papers = subject ? subjectPapers(data, subject.id) : [];
   const mistakeCount = (id: string) => data.mistakes.filter((m) => m.paperId === id).length;
+  const avg = subject ? subjectAverage(data, subject.id) : null;
 
   return (
     <div className="page">
@@ -54,74 +58,104 @@ function PapersView({ data }: { data: AllData }) {
         </Button>
       </Topbar>
 
-      <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 2fr)' }}>
-        <Card index={0} className="home-card">
-          <CardHead icon={<Zap size={18} strokeWidth={SW} />} tone="lagoon" title="Weekly target" aside={`${fmtDay(weekStart)} – ${fmtDay(weekEnd)}`} />
-          <div className="row" style={{ gap: 12 }}>
-            {timedThisWeek.length ? <CheckCircle2 size={32} strokeWidth={1.5} color="var(--green)" /> : <Circle size={32} strokeWidth={1.5} color="var(--text-2)" />}
-            <div>
-              <div style={{ fontSize: 'var(--fs-17)', fontWeight: 600 }}>{timedThisWeek.length ? 'Timed practice done' : 'Timed practice this weekend'}</div>
-              <div className="small muted">
-                {timedThisWeek.length ? timedThisWeek.map((p) => `${paperLabel(p)} · ${Math.round(pct(p))}%`).join(', ') : 'Exam conditions, no breaks.'}
+      {subject && (
+        <div className="tests-hero">
+          <Glass tone="blue" wide index={0} className="trend-gel">
+            <GlassHead title={`${courseTitle(subject.name)} trend`}>
+              <div className="glass-tabs inline">
+                {subjects.map((s) => (
+                  <button key={s.id} type="button" className={s.id === subject.id ? 'on' : undefined} onClick={() => setParams({ subject: s.id }, { replace: true })}>
+                    {splitCourse(s.name).code ?? courseTitle(s.name)}
+                  </button>
+                ))}
+              </div>
+            </GlassHead>
+            <div className="trend-figs">
+              <div>
+                <DotNum big className="lead">
+                  {papers.length ? Math.round(pct(papers[papers.length - 1])) : '–'}
+                  <small>%</small>
+                </DotNum>
+                <span className="label-dim">latest mark</span>
+              </div>
+              <div>
+                <DotNum big className="lead">
+                  {avg == null ? '–' : Math.round(avg)}
+                  <small>%</small>
+                </DotNum>
+                <span className="label-dim">average, last three</span>
+              </div>
+              <div>
+                <DotNum big className="lead">
+                  {subject.targetPct}
+                  <small>%</small>
+                </DotNum>
+                <span className="label-dim">target</span>
               </div>
             </div>
-          </div>
-          {!timedThisWeek.length && (
-            <Link to="/timer?sprint=1" className="btn primary push" style={{ alignSelf: 'flex-start' }}>
-              Start timed sprint
-            </Link>
-          )}
-        </Card>
-
-        <Card index={1}>
-          <CardHead icon={<BarChart3 size={18} strokeWidth={SW} />} tone="orchid" title="All courses, latest mark" aside="White line marks the target" />
-          {subjects.length === 0 ? (
-            <Empty text="Add courses to compare them." action={<Link to="/subjects" className="btn sm">Courses</Link>} />
-          ) : (
-            subjects.map((s) => {
-              const ps = subjectPapers(data, s.id);
-              const latest = ps[ps.length - 1];
-              const v = latest ? pct(latest) : null;
-              return (
-                <div key={s.id} className="compare-row">
-                  <span className="row small" style={{ flexWrap: 'nowrap', overflow: 'hidden' }}>
-                    <span className="subject-dot" style={{ background: s.colour }} />
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.name}</span>
-                  </span>
-                  <Progress value={v ?? 0} target={s.targetPct} color={s.colour} />
-                  <span className="num right small" style={{ fontWeight: 600, textAlign: 'right' }}>
-                    {v == null ? '–' : `${Math.round(v)}%`}
-                  </span>
+            <div className="hero-chart">
+              {papers.length ? (
+                <MultiLine series={[{ id: subject.id, colour: '#ffffff', values: papers.map(pct) }]} labels={papers.map((p) => fmtDay(p.date))} target={subject.targetPct} focus={subject.id} hue="white" />
+              ) : (
+                <div className="trend-empty">
+                  <button type="button" className="white-pill" onClick={() => openUI({ logPaper: { preset: { subjectId: subject.id } } })}>
+                    Log the first {courseTitle(subject.name)} mark
+                  </button>
                 </div>
-              );
-            })
-          )}
-        </Card>
-      </div>
+              )}
+            </div>
+          </Glass>
+
+          <Glass tone="pink" index={1}>
+            <GlassHead title="Timed practice">
+              <span className="glass-tag">{fmtDay(weekStart)} – {fmtDay(weekEnd)}</span>
+            </GlassHead>
+            <DotNum big className="lead">
+              {timedThisWeek.length}
+            </DotNum>
+            <span className="label-dim">{timedThisWeek.length ? 'done this week, exam conditions' : 'this week. One full paper by Sunday.'}</span>
+            <div className="hero-foot">
+              <span className="label-dim">Last 8 weeks</span>
+              <DotStrip
+                values={Array.from({ length: 8 }, (_, i) => {
+                  const ws = addDays(weekStart, (i - 7) * 7);
+                  return data.papers.some((p) => p.timed && p.date >= ws && p.date <= addDays(ws, 6));
+                })}
+                current={7}
+              />
+              <Link to="/timer?sprint=1" className="white-pill small">
+                <Zap size={14} strokeWidth={2} /> {timedThisWeek.length ? 'Another sprint' : 'Start a sprint'}
+              </Link>
+            </div>
+          </Glass>
+
+          <Glass tone="smoke" index={2}>
+            <GlassHead title="Latest, every course" />
+            <div className="latest-list">
+              {subjects.map((s) => {
+                const ps = subjectPapers(data, s.id);
+                const latest = ps[ps.length - 1];
+                const v = latest ? pct(latest) : null;
+                return (
+                  <button key={s.id} type="button" className={s.id === subject.id ? 'll-row on' : 'll-row'} onClick={() => setParams({ subject: s.id }, { replace: true })} style={{ ['--c' as string]: s.colour }}>
+                    <span className="ll-name">{courseTitle(s.name)}</span>
+                    <span className="ll-track">
+                      <i style={{ width: `${v ?? 0}%` }} />
+                      <b style={{ left: `${s.targetPct}%` }} />
+                    </span>
+                    <span className="ll-val num">{v == null ? '–' : `${Math.round(v)}%`}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Glass>
+        </div>
+      )}
 
       {subject && (
         <>
-          <div className="chip-row">
-            {subjects.map((s) => (
-              <Chip key={s.id} dot={s.colour} active={s.id === subject.id} onClick={() => setParams({ subject: s.id }, { replace: true })}>
-                {s.name}
-              </Chip>
-            ))}
-          </div>
-
-          <Card index={2}>
-            <CardHead icon={<TrendingUp size={18} strokeWidth={SW} />} tone="ember" title={`${subject.name} trend`} aside={`Target ${subject.targetPct}%`} />
-            {papers.length ? (
-              <div style={{ height: '13rem' }}>
-                <MultiLine series={[{ id: subject.id, colour: subject.colour, values: papers.map(pct) }]} labels={papers.map((p) => fmtDay(p.date))} target={subject.targetPct} focus={subject.id} />
-              </div>
-            ) : (
-              <Empty text={`No ${subject.name} papers yet.`} action={<Button size="sm" onClick={() => openUI({ logPaper: { preset: { subjectId: subject.id } } })}>Log a paper</Button>} />
-            )}
-          </Card>
-
           {papers.length > 0 && (
-            <Card index={3}>
+            <Panel index={3} title={`${courseTitle(subject.name)} marks`} aside={`${papers.length} logged`} className="aura-blue">
               <div className="table-wrap">
                 <table className="table">
                   <thead>
@@ -188,7 +222,7 @@ function PapersView({ data }: { data: AllData }) {
                   </tbody>
                 </table>
               </div>
-            </Card>
+            </Panel>
           )}
         </>
       )}

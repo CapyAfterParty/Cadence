@@ -2,13 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, RotateCcw, X } from 'lucide-react';
 import { useData, type AllData } from '../db/db';
-import { courseTitle } from '../lib/course';
-import type { ID, Mistake } from '../db/types';
+import { courseTitle, splitCourse } from '../lib/course';
+import type { ID, Mistake, Subject } from '../db/types';
 import { recordAttempt } from '../db/ops';
 import { relDays } from '../lib/dates';
 import { activeSubjects, isDue, lastAttemptMap, sortForRedo } from '../lib/stats';
 import { settings } from '../lib/state';
-import { Button, Card, Chip, Empty, ErrorPill, PageSkeleton, Progress, Segmented, Stat, WeaknessPill } from '../components/ui';
+import { Button, Empty, ErrorPill, PageSkeleton, WeaknessPill } from '../components/ui';
+import { DotNum, Glass, GlassHead, Panel } from '../components/glass';
+import './pages.css';
 import { Topbar } from '../components/Topbar';
 import { TopicSelect } from '../components/pickers';
 import { useScans } from '../components/Scans';
@@ -30,28 +32,33 @@ function PickSubject({ data }: { data: AllData }) {
   return (
     <div className="page">
       <Topbar eyebrow="Mistakes" title="Redo" />
-      <Card>
-        <h2 style={{ fontSize: 'var(--fs-17)', fontWeight: 600, marginBottom: 16 }}>Pick a course</h2>
-        {subjects.length === 0 ? (
+      {subjects.length === 0 ? (
+        <Panel>
           <Empty text="Add a course first." action={<Link to="/subjects" className="btn sm">Courses</Link>} />
-        ) : (
-          <div className="list">
-            {subjects.map((s) => {
-              const open = data.mistakes.filter((m) => m.subjectId === s.id && !m.cleared);
-              const due = open.filter((m) => isDue(m, last, st.redoDays)).length;
-              return (
-                <button key={s.id} type="button" className="list-item" onClick={() => nav(`/redo?subject=${s.id}`)} disabled={!open.length}>
-                  <span className="subject-dot" style={{ background: s.colour }} />
-                  <span className="grow">{s.name}</span>
-                  <span className="small muted">
-                    {open.length} open · {due} due
-                  </span>
+        </Panel>
+      ) : (
+        <div className="redo-pick">
+          {subjects.map((s, i) => {
+            const open = data.mistakes.filter((m) => m.subjectId === s.id && !m.cleared);
+            const due = open.filter((m) => isDue(m, last, st.redoDays)).length;
+            return (
+              <Glass key={s.id} tone="course" colour={s.colour} index={i}>
+                <GlassHead title={<span className="glass-tag">{splitCourse(s.name).code ?? 'Course'}</span>} />
+                <span className="cc-title">{courseTitle(s.name)}</span>
+                <div className="cc-mid">
+                  <DotNum big className="lead">
+                    {due}
+                  </DotNum>
+                  <span className="label-dim">due · {open.length} open</span>
+                </div>
+                <button type="button" className="white-pill" onClick={() => nav(`/redo?subject=${s.id}`)} disabled={!open.length}>
+                  <RotateCcw size={14} strokeWidth={2} /> {open.length ? 'Redo' : 'All clear'}
                 </button>
-              );
-            })}
-          </div>
-        )}
-      </Card>
+              </Glass>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -63,6 +70,7 @@ function Setup({ data, subjectId, topicParam }: { data: AllData; subjectId: ID; 
   const [queue, setQueue] = useState<ID[] | null>(null);
   const subject = data.subjects.find((s) => s.id === subjectId)!;
   const last = useMemo(() => lastAttemptMap(data.attempts), [data.attempts]);
+  const topicName = new Map(data.topics.map((t) => [t.id, t.name]));
   const candidates = sortForRedo(
     data.mistakes.filter(
       (m) => m.subjectId === subjectId && !m.cleared && (!topicId || m.topicId === topicId) && (scope === 'all' || isDue(m, last, st.redoDays)),
@@ -70,40 +78,69 @@ function Setup({ data, subjectId, topicParam }: { data: AllData; subjectId: ID; 
     last,
   );
 
-  if (queue) return <Session data={data} ids={queue} subjectName={subject.name} onDone={() => setQueue(null)} />;
+  if (queue) return <Session data={data} ids={queue} subject={subject} onDone={() => setQueue(null)} />;
 
   return (
     <div className="page">
       <Topbar eyebrow="Mistakes" title={`Redo · ${courseTitle(subject.name)}`}>
         <Link to="/redo" className="btn">
-          Change subject
+          Change course
         </Link>
       </Topbar>
-      <Card className="redo-card">
-        <div className="row-between">
-          <Stat value={candidates.length} label={candidates.length === 1 ? 'mistake to redo' : 'mistakes to redo'} />
-          <Segmented
-            label="Scope"
-            value={scope}
-            onChange={setScope}
-            options={[
-              { value: 'all', label: 'All open' },
-              { value: 'due', label: 'Only due' },
-            ]}
-          />
-        </div>
-        <div style={{ maxWidth: 280 }}>
-          <TopicSelect data={data} subjectId={subjectId} value={topicId} onChange={setTopicId} allowAny />
-        </div>
-        <p className="muted small">Most overdue first. Mark each one right or wrong. Right clears it; wrong keeps it in the queue.</p>
-        {candidates.length ? (
-          <Button variant="primary" size="lg" onClick={() => setQueue(candidates.map((m) => m.id))}>
-            <RotateCcw size={18} strokeWidth={1.5} /> Start redo
-          </Button>
-        ) : (
-          <Empty text="Nothing to redo here. Nice." action={<Link className="btn sm" to={`/subjects/${subjectId}`}>Back to {subject.name}</Link>} />
-        )}
-      </Card>
+      <div className="split wide-right">
+        <Glass tone="course" colour={subject.colour} index={0} className="redo-ready">
+          <GlassHead title="Ready">
+            <div className="glass-tabs inline">
+              <button type="button" className={scope === 'all' ? 'on' : undefined} onClick={() => setScope('all')}>
+                All open
+              </button>
+              <button type="button" className={scope === 'due' ? 'on' : undefined} onClick={() => setScope('due')}>
+                Only due
+              </button>
+            </div>
+          </GlassHead>
+          <DotNum big className="lead">
+            {candidates.length}
+          </DotNum>
+          <span className="label-dim">{candidates.length === 1 ? 'mistake to redo' : 'mistakes to redo'}, most overdue first</span>
+          <div className="redo-topic">
+            <TopicSelect data={data} subjectId={subjectId} value={topicId} onChange={setTopicId} allowAny />
+          </div>
+          <span className="label-dim">Redo each one on paper, then reveal the fix. Right clears it; wrong keeps it in the queue.</span>
+          {candidates.length ? (
+            <button type="button" className="white-pill big" onClick={() => setQueue(candidates.map((m) => m.id))}>
+              <RotateCcw size={16} strokeWidth={2} /> Start redo
+            </button>
+          ) : (
+            <Link className="white-pill" to={`/subjects/${subjectId}`}>
+              Nothing here. Back to {courseTitle(subject.name)}
+            </Link>
+          )}
+        </Glass>
+        <Panel index={1} title="In the queue" aside={`${candidates.length}`} className="aura-violet">
+          {candidates.length === 0 ? (
+            <Empty text="Nothing to redo here. Nice." />
+          ) : (
+            <div className="queue">
+              {candidates.slice(0, 10).map((m, i) => {
+                const l = last.get(m.id);
+                return (
+                  <div key={m.id} className="q-row">
+                    <span className="q-n num">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="q-main">
+                      {m.source}
+                      <small>{m.topicId ? topicName.get(m.topicId) : 'No topic'} · last {l ? relDays(l) : 'never'}</small>
+                    </span>
+                    <ErrorPill value={m.errorType} />
+                    <WeaknessPill value={m.weakness} />
+                  </div>
+                );
+              })}
+              {candidates.length > 10 && <span className="label-dim">and {candidates.length - 10} more</span>}
+            </div>
+          )}
+        </Panel>
+      </div>
     </div>
   );
 }
@@ -122,7 +159,8 @@ function QuestionScans({ mistakeId }: { mistakeId: ID }) {
   );
 }
 
-function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[]; subjectName: string; onDone: () => void }) {
+function Session({ data, ids, subject, onDone }: { data: AllData; ids: ID[]; subject: Subject; onDone: () => void }) {
+  const subjectName = courseTitle(subject.name);
   const [i, setI] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [results, setResults] = useState<{ m: Mistake; correct: boolean }[]>([]);
@@ -159,18 +197,37 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
     const wrong = results.filter((r) => !r.correct);
     return (
       <div className="page">
-        <Topbar title={`Redo · ${subjectName}`} />
-        <Card className="redo-card">
-          <h2 style={{ fontSize: 'var(--fs-24)', fontWeight: 600 }}>Session done</h2>
-          <div className="grid-2">
-            <Stat value={right.length} label="Right, now cleared" />
-            <Stat value={wrong.length} label="Wrong, still in the queue" accent={wrong.length > 0} />
-          </div>
-          {wrong.length > 0 && (
-            <div>
-              <div className="field-label" style={{ marginBottom: 8 }}>
-                Still to fix
+        <Topbar eyebrow="Redo" title={subjectName} />
+        <div className="split">
+          <Glass tone="course" colour={subject.colour} index={0} className="redo-done">
+            <GlassHead title="Session done" />
+            <div className="trend-figs">
+              <div>
+                <DotNum big className="lead">
+                  {right.length}
+                </DotNum>
+                <span className="label-dim">right, now cleared</span>
               </div>
+              <div>
+                <DotNum big className="lead">
+                  {wrong.length}
+                </DotNum>
+                <span className="label-dim">wrong, still queued</span>
+              </div>
+            </div>
+            <div className="hero-foot row">
+              <button type="button" className="white-pill" onClick={onDone}>
+                Back to redo
+              </button>
+              <Link to="/" className="dark-pill">
+                Today
+              </Link>
+            </div>
+          </Glass>
+          <Panel index={1} title="Still to fix" aside={`${wrong.length}`}>
+            {wrong.length === 0 ? (
+              <Empty text="Everything you tried was right." />
+            ) : (
               <div className="list">
                 {wrong.map(({ m }) => (
                   <Link key={m.id} to={`/mistakes?subject=${m.subjectId}&open=${m.id}`} className="list-item">
@@ -179,17 +236,9 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
                   </Link>
                 ))}
               </div>
-            </div>
-          )}
-          <div className="row">
-            <Button variant="primary" onClick={onDone}>
-              Back to redo
-            </Button>
-            <Link to="/" className="btn">
-              Home
-            </Link>
-          </div>
-        </Card>
+            )}
+          </Panel>
+        </div>
       </div>
     );
   }
@@ -197,7 +246,7 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
   const l = last.get(m.id);
   return (
     <div className="page">
-      <Topbar title={`Redo · ${subjectName}`}>
+      <Topbar eyebrow="Redo" title={subjectName}>
         <span className="small muted num">
           {i + 1} of {items.length}
         </span>
@@ -205,12 +254,14 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
           End
         </Button>
       </Topbar>
-      <div style={{ maxWidth: 720, width: '100%', margin: '0 auto' }}>
-        <Progress value={(i / items.length) * 100} />
-      </div>
-      <Card className="redo-card" key={m.id}>
+      <section className="redo-stage" key={m.id} style={{ ['--c' as string]: subject.colour }}>
+        <div className="rs-progress">
+          {items.map((it, k) => (
+            <span key={it.id} className={k < i ? (results[k]?.correct ? 'rp ok' : 'rp bad') : k === i ? 'rp now' : 'rp'} />
+          ))}
+        </div>
         <div className="row">
-          {m.topicId && <Chip>{topicName.get(m.topicId)}</Chip>}
+          {m.topicId && <span className="glass-tag">{topicName.get(m.topicId)}</span>}
           <ErrorPill value={m.errorType} />
           <WeaknessPill value={m.weakness} />
           <span className="tiny muted" style={{ marginLeft: 'auto' }}>
@@ -222,13 +273,13 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
         {revealed ? (
           <>
             <div className="redo-fix">{m.fix || <span className="muted">No fix written for this one.</span>}</div>
-            <div className="redo-actions">
-              <Button size="lg" className="wrong" onClick={() => mark(false)}>
-                <X size={18} strokeWidth={1.5} /> Wrong
-              </Button>
-              <Button size="lg" className="right" onClick={() => mark(true)}>
-                <Check size={18} strokeWidth={1.5} /> Right
-              </Button>
+            <div className="rs-actions">
+              <button type="button" className="dark-pill big" onClick={() => mark(false)}>
+                <X size={16} strokeWidth={2} /> Wrong
+              </button>
+              <button type="button" className="white-pill big" onClick={() => mark(true)}>
+                <Check size={16} strokeWidth={2} /> Right
+              </button>
             </div>
             <p className="tiny muted" style={{ textAlign: 'center' }}>
               ← wrong · → right
@@ -237,15 +288,17 @@ function Session({ data, ids, subjectName, onDone }: { data: AllData; ids: ID[];
         ) : (
           <>
             <p className="muted">Redo the question on paper. Then check the fix.</p>
-            <Button size="lg" variant="white" autoFocus onClick={() => setRevealed(true)}>
-              Reveal fix
-            </Button>
+            <div className="rs-actions">
+              <button type="button" className="white-pill big" autoFocus onClick={() => setRevealed(true)}>
+                Reveal fix
+              </button>
+            </div>
             <p className="tiny muted" style={{ textAlign: 'center' }}>
               Space to reveal
             </p>
           </>
         )}
-      </Card>
+      </section>
     </div>
   );
 }

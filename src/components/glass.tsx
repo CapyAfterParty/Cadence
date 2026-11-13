@@ -101,9 +101,9 @@ export function DotStrip({ values, current, title }: { values: boolean[]; curren
 }
 
 /** Dark glass panel for the working parts of a screen. */
-export function Panel({ title, aside, index = 0, className, children, style }: { title?: ReactNode; aside?: ReactNode; index?: number; className?: string; children: ReactNode; style?: CSSProperties }) {
+export function Panel({ title, aside, index = 0, className, children, style, id }: { title?: ReactNode; aside?: ReactNode; index?: number; className?: string; children: ReactNode; style?: CSSProperties; id?: string }) {
   return (
-    <section className={cx('panel', className)} style={{ ['--i' as string]: index, ...style }}>
+    <section id={id} className={cx('panel', className)} style={{ ['--i' as string]: index, ...style }}>
       {(title || aside) && (
         <div className="panel-head">
           {title && <h2>{title}</h2>}

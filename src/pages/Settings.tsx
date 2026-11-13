@@ -5,7 +5,9 @@ import { addScans, deleteSubject } from '../db/ops';
 import { exportBackup, importBackup } from '../lib/backup';
 import { settings, toast } from '../lib/state';
 import { checkPassword, getVerifier, lockNow, passwordStrength, security, setPassword, siteKey } from '../lib/security';
-import { Button, Card, IconTile, PageSkeleton, Segmented, cx, type Tone } from '../components/ui';
+import { Button, PageSkeleton, Segmented, cx } from '../components/ui';
+import { DotNum, Glass, Panel } from '../components/glass';
+import './pages.css';
 import { Topbar } from '../components/Topbar';
 import { useScans } from '../components/Scans';
 import { Enso, Wordmark } from '../components/Logo';
@@ -13,14 +15,14 @@ import { OWNER } from '../owner';
 
 const SW = 1.7;
 
-const SECTIONS: { id: string; label: string; tone: Tone; icon: ReactNode }[] = [
-  { id: 'profile', label: 'Profile', tone: 'ember', icon: <UserRound size={15} strokeWidth={SW} /> },
-  { id: 'security', label: 'Security', tone: 'meadow', icon: <ShieldCheck size={15} strokeWidth={SW} /> },
-  { id: 'study', label: 'Study rhythm', tone: 'orchid', icon: <SlidersHorizontal size={15} strokeWidth={SW} /> },
-  { id: 'appearance', label: 'Appearance', tone: 'coral', icon: <ImageIcon size={15} strokeWidth={SW} /> },
-  { id: 'subjects', label: 'Courses', tone: 'lagoon', icon: <BookOpen size={15} strokeWidth={SW} /> },
-  { id: 'data', label: 'Data & backup', tone: 'gold', icon: <Database size={15} strokeWidth={SW} /> },
-  { id: 'about', label: 'About', tone: 'orchid', icon: <Info size={15} strokeWidth={SW} /> },
+const SECTIONS: { id: string; label: string; aura: string; icon: ReactNode }[] = [
+  { id: 'profile', label: 'Profile', aura: 'pink', icon: <UserRound size={15} strokeWidth={SW} /> },
+  { id: 'security', label: 'Security', aura: 'green', icon: <ShieldCheck size={15} strokeWidth={SW} /> },
+  { id: 'study', label: 'Study rhythm', aura: 'violet', icon: <SlidersHorizontal size={15} strokeWidth={SW} /> },
+  { id: 'appearance', label: 'Appearance', aura: 'pink', icon: <ImageIcon size={15} strokeWidth={SW} /> },
+  { id: 'subjects', label: 'Courses', aura: 'blue', icon: <BookOpen size={15} strokeWidth={SW} /> },
+  { id: 'data', label: 'Data & backup', aura: 'orange', icon: <Database size={15} strokeWidth={SW} /> },
+  { id: 'about', label: 'About', aura: 'violet', icon: <Info size={15} strokeWidth={SW} /> },
 ];
 
 function Row({ title, desc, children }: { title: string; desc?: ReactNode; children: ReactNode }) {
@@ -35,19 +37,47 @@ function Row({ title, desc, children }: { title: string; desc?: ReactNode; child
   );
 }
 
-function Section({ id, title, desc, children, index, tint }: { id: string; title: string; desc?: string; children: ReactNode; index: number; tint?: Tone }) {
+function Section({ id, title, desc, children, index }: { id: string; title: string; desc?: string; children: ReactNode; index: number }) {
   const s = SECTIONS.find((x) => x.id === id)!;
   return (
-    <Card className="s-section" index={index} tint={tint ?? s.tone} id={`s-${id}`}>
-      <div className="row" style={{ gap: '0.85rem' }}>
-        <IconTile tone={s.tone}>{s.icon}</IconTile>
-        <div>
-          <h3>{title}</h3>
-          {desc && <p className="muted small">{desc}</p>}
-        </div>
+    <Panel className={`s-section aura-${s.aura}`} index={index} id={`s-${id}`}>
+      <div className="s-sec-head">
+        <h3>{title}</h3>
+        {desc && <p className="muted small">{desc}</p>}
       </div>
       {children}
-    </Card>
+    </Panel>
+  );
+}
+
+function SectionNav() {
+  const [on, setOn] = useState('profile');
+  useEffect(() => {
+    const els = SECTIONS.map((x) => document.getElementById(`s-${x.id}`)).filter(Boolean) as HTMLElement[];
+    const io = new IntersectionObserver(
+      (entries) => {
+        const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (vis) setOn(vis.target.id.slice(2));
+      },
+      { rootMargin: '-20% 0px -60% 0px' },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+  return (
+    <nav className="panel s-nav" aria-label="Settings sections">
+      {SECTIONS.map((x) => (
+        <button
+          key={x.id}
+          type="button"
+          className={cx('fr-item', on === x.id && 'on')}
+          onClick={() => document.getElementById(`s-${x.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+        >
+          <span className="s-nav-ico">{x.icon}</span>
+          <span>{x.label}</span>
+        </button>
+      ))}
+    </nav>
   );
 }
 
@@ -57,7 +87,8 @@ export default function SettingsPage() {
   return (
     <div className="page">
       <Topbar title="Settings" />
-      <div className="settings-layout single">
+      <div className="settings-layout">
+        <SectionNav />
         <div className="s-main">
           <Profile data={data} />
           <SecuritySection />
@@ -74,16 +105,40 @@ export default function SettingsPage() {
 
 function Profile({ data }: { data: AllData }) {
   const courses = data.subjects.filter((s) => !s.archived).length;
+  const minutes = data.sessions.reduce((a, x) => a + x.minutes, 0);
   return (
-    <Card className="s-section s-hero" index={0} tint="#b9a8e0" id="s-profile">
-      <span className="s-avatar">{OWNER.name[0]}</span>
-      <div className="stack" style={{ gap: '0.35rem', flex: 1, minWidth: 0 }}>
-        <h2 className="s-name">{OWNER.name}</h2>
-        <span className="muted small">
-          {OWNER.curriculum} curriculum · {courses} {courses === 1 ? 'course' : 'courses'} · {data.papers.length} tests · {data.mistakes.length} mistakes
-        </span>
-      </div>
-    </Card>
+    <div id="s-profile">
+      <Glass tone="pink" wide index={0} className="s-profile">
+        <div className="sp-top">
+          <span className="s-avatar">{OWNER.name[0]}</span>
+          <div className="stack" style={{ gap: '0.3rem', minWidth: 0 }}>
+            <h2 className="s-name">{OWNER.name}</h2>
+            <span className="label-dim">{OWNER.curriculum} curriculum</span>
+          </div>
+        </div>
+        <div className="trend-figs sp-figs">
+          <div>
+            <DotNum className="lead">{courses}</DotNum>
+            <span className="label-dim">courses</span>
+          </div>
+          <div>
+            <DotNum className="lead">{data.papers.length}</DotNum>
+            <span className="label-dim">marks logged</span>
+          </div>
+          <div>
+            <DotNum className="lead">{data.mistakes.length}</DotNum>
+            <span className="label-dim">mistakes logged</span>
+          </div>
+          <div>
+            <DotNum className="lead">
+              {Math.round(minutes / 60)}
+              <small>h</small>
+            </DotNum>
+            <span className="label-dim">studied here</span>
+          </div>
+        </div>
+      </Glass>
+    </div>
   );
 }
 

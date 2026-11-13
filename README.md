@@ -51,7 +51,7 @@ What this does and does not protect: it is a lock on the app, not encryption. So
 - **Papers**: weekly timed-paper target, all subjects compared, trend per subject, scans per paper
 - **Timer**: study sessions (survive refresh, shown in the tab title), timed sprints in full-screen exam mode, flashcard log
 - **Check-in**: this week's stats pre-filled, reflection form that saves as you type, past check-ins
-- **Settings**: name, redo interval, homepage photo, subjects, JSON backup and restore
+- **Settings**: name, redo interval, the photo in Today's glass card, subjects, JSON backup and restore
 
 ## Data safety
 
@@ -59,14 +59,14 @@ The app asks the browser for persistent storage. Export a JSON backup from Setti
 
 ## Design
 
-Minimal and calm, in the spirit of Zen.
+Dark, glassy and vivid, after the reference dashboard.
 
-- **Mark:** an ensō, the single brushstroke circle. It is the weekly loop, and it draws itself on the lock screen.
-- **Surface:** warm near-black, matte cards with hairline edges. No gradients, glows or blur.
-- **Colour:** warm greys plus one muted clay accent, used only for "now", "today" and the primary action. Subject colours are muted earth tones.
-- **Type:** Geist at light weights for numbers, Geist Mono for small labels, Instrument Serif italic for a single word in a headline.
-- **Charts:** one thin line, ring or set of bars each; the accent marks the current point.
-- **Motion:** slow fades and draws, no bounce. Reduced-motion settings are respected.
+- **Mark:** an ensō, the single brushstroke circle. The favicon is the white ensō on a pink-violet-blue glass tile (`public/summit-icon.svg`, with PNG copies for Safari).
+- **Materials (`src/styles/glass.css`, `src/components/glass.tsx`):** gel cards (pink, blue, violet, or any course colour) lit at the top and bottom edges with a dark centre; smoky grey glass; dark glass panels with a coloured glow. A soft light follows the cursor.
+- **Numbers:** dot-matrix numerals (Doto, round dots) for headline figures, thin Outfit for the rest.
+- **Today:** four tall cards (study dot matrix, plan under reeded glass over your photo, mistakes in orbit, upcoming tests in rings), a strip of quick controls, and the week's timeline.
+- **Other screens:** a row of glass cards on top, then wide working panels: filter rail and table on Mistakes, a big dot-matrix clock on Focus, course-coloured gels on Courses and Redo.
+- **Motion:** cards rise and un-blur on entry, dots fill in, orbits turn slowly. No bounce. Reduced-motion settings are respected.
 - **Scale:** sizes are in rem with a fluid root, so a 16" laptop and a 27" display get the same composition.
 
 ## Code map

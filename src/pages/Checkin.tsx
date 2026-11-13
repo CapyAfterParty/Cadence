@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle2, Download, FileText, PenLine, Search, Target } from 'lucide-react';
+import { CheckCircle2, Download, Search } from 'lucide-react';
 import { db, newRow, useData, type AllData } from '../db/db';
 import type { Checkin as CheckinRow, WeekStats } from '../db/types';
 import { addDays, fmtDay, fmtHours, todayKey, weekStartKey } from '../lib/dates';
 import { isCheckinDone, weekStats } from '../lib/stats';
 import { exportBackup } from '../lib/backup';
 import { settings } from '../lib/state';
-import { Button, Card, CardHead, Empty, PageSkeleton, Progress, Stat } from '../components/ui';
+import { Empty, PageSkeleton } from '../components/ui';
+import { DotNum, DotStrip, Glass, GlassHead, Panel } from '../components/glass';
+import { RangeLine } from '../components/charts/fancy';
+import { splitCourse } from '../lib/course';
+import './pages.css';
 import { AutoInput, AutoTextarea } from '../components/auto';
 import { Topbar } from '../components/Topbar';
 
@@ -57,9 +61,8 @@ function CheckinView({ data, weekStart }: { data: AllData; weekStart: string }) 
 
       <StatsGrid data={data} stats={stats} />
 
-      <div className="grid-2" style={{ gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', alignItems: 'start' }}>
-        <Card index={6}>
-          <CardHead icon={<PenLine size={18} strokeWidth={1.7} />} tone="orchid" title="Reflect" aside="Saves as you type" />
+      <div className="split wide-left" style={{ alignItems: 'start' }}>
+        <Panel index={6} title="Reflect" aside="Saves as you type" className="aura-violet">
           <div className="stack">
             <label className="field">
               <span className="field-label">What did I actually do this week?</span>
@@ -90,7 +93,7 @@ function CheckinView({ data, weekStart }: { data: AllData; weekStart: string }) 
               ))}
             </div>
           </div>
-        </Card>
+        </Panel>
         <div className="stack">
           <SubjectsProgress stats={stats} data={data} />
           <BackupCard />
@@ -106,22 +109,45 @@ function StatsGrid({ data, stats }: { data: AllData; stats: WeekStats }) {
   const subjectName = new Map(data.subjects.map((s) => [s.id, s.name]));
   return (
     <>
-      <div className="grid-4">
-        <Card index={0}>
-          <Stat value={Math.round((stats.studyMinutes / 60) * 10) / 10} decimals={1} unit="h" label="Study time" />
-        </Card>
-        <Card index={1}>
-          <Stat value={stats.streak} unit="days" label="Streak" />
-        </Card>
-        <Card index={2}>
-          <Stat value={stats.cardsDone} unit="cards" label={`Flashcards · ${stats.flashDays}/7 days${stats.flashAccuracy != null ? ` · ${stats.flashAccuracy}% acc` : ''}`} />
-        </Card>
-        <Card index={3}>
-          <Stat value={stats.mistakesCleared} unit="cleared" label={`Mistakes · ${stats.mistakesLogged} logged this week`} />
-        </Card>
+      <div className="hero-row short">
+        <Glass tone="pink" index={0}>
+          <GlassHead title="Study time" />
+          <DotNum big className="lead">
+            {(Math.round((stats.studyMinutes / 60) * 10) / 10).toFixed(1)}
+            <small>h</small>
+          </DotNum>
+          <span className="label-dim">{fmtHours(stats.studyMinutes)} across the week</span>
+        </Glass>
+        <Glass tone="smoke" index={1}>
+          <GlassHead title="Streak" />
+          <div className="hc-figure">
+            <span className="thin-num">{stats.streak}</span>
+            <span className="hc-unit">days in a row</span>
+          </div>
+          <div className="hero-foot">
+            <DotStrip values={Array.from({ length: 7 }, (_, i) => i < Math.min(7, stats.streak))} />
+          </div>
+        </Glass>
+        <Glass tone="blue" index={2}>
+          <GlassHead title="Flashcards" />
+          <DotNum big className="lead">
+            {stats.cardsDone}
+          </DotNum>
+          <span className="label-dim">cards{stats.flashAccuracy != null ? ` · ${stats.flashAccuracy}% accuracy` : ''}</span>
+          <div className="hero-foot">
+            <span className="label-dim">{stats.flashDays} of 7 days</span>
+            <DotStrip values={Array.from({ length: 7 }, (_, i) => i < stats.flashDays)} />
+          </div>
+        </Glass>
+        <Glass tone="violet" index={3}>
+          <GlassHead title="Mistakes" />
+          <DotNum big className="lead">
+            {stats.mistakesCleared}
+          </DotNum>
+          <span className="label-dim">cleared · {stats.mistakesLogged} logged this week</span>
+        </Glass>
       </div>
-      <Card index={4}>
-        <CardHead icon={<FileText size={18} strokeWidth={1.7} />} tone="lagoon" title="Papers this week" aside={stats.timedPaperDone ? 'Timed paper done' : 'No timed paper'} />
+      <Panel index={4} title="Marks this week" aside={stats.timedPaperDone ? 'Timed paper done' : 'No timed paper yet'} className="aura-green">
         {stats.papers.length === 0 ? (
           <p className="muted small">No papers logged this week.</p>
         ) : (
@@ -130,7 +156,7 @@ function StatsGrid({ data, stats }: { data: AllData; stats: WeekStats }) {
               const prev = stats.papers.slice(0, i).filter((x) => x.subjectId === p.subjectId).pop();
               const delta = prev ? p.pct - prev.pct : null;
               return (
-                <span key={i} className="chip" style={{ cursor: 'default' }}>
+                <span key={i} className="mark-chip">
                   {subjectName.get(p.subjectId)} · {p.name} <strong className="num">{p.pct}%</strong>
                   {delta != null && <span className={delta >= 0 ? 'tiny' : 'tiny'} style={{ color: delta >= 0 ? 'var(--green)' : 'var(--red)' }}>{delta >= 0 ? `+${delta}` : delta}</span>}
                 </span>
@@ -138,7 +164,7 @@ function StatsGrid({ data, stats }: { data: AllData; stats: WeekStats }) {
             })}
           </div>
         )}
-      </Card>
+      </Panel>
     </>
   );
 }
@@ -146,32 +172,34 @@ function StatsGrid({ data, stats }: { data: AllData; stats: WeekStats }) {
 function SubjectsProgress({ stats, data }: { stats: WeekStats; data: AllData }) {
   const colour = new Map(data.subjects.map((s) => [s.id, s.colour]));
   return (
-    <Card index={7}>
-      <CardHead icon={<Target size={18} strokeWidth={1.7} />} tone="meadow" title="On track?" aside="Average vs target" />
+    <Panel index={7} title="On track?" aside="Average vs target" className="aura-blue">
       {stats.subjects.length === 0 ? (
         <p className="muted small">No courses yet.</p>
       ) : (
-        <div className="stack" style={{ gap: 14 }}>
+        <div className="targets">
           {stats.subjects.map((s) => {
             const on = s.avg != null && s.avg >= s.target;
+            const { code, title } = splitCourse(s.name);
             return (
-              <div key={s.subjectId} className="stack" style={{ gap: 6 }}>
-                <div className="row-between small">
-                  <span className="row" style={{ gap: 8 }}>
-                    <span className="subject-dot" style={{ background: colour.get(s.subjectId) }} /> {s.name}
-                  </span>
-                  <span className="num">
-                    {s.avg == null ? '–' : `${Math.round(s.avg)}%`} <span className="muted">/ {s.target}%</span>{' '}
-                    <span className={on ? 'pill green' : s.avg == null ? 'pill' : 'pill amber'}>{s.avg == null ? 'No data' : on ? 'On track' : 'Behind'}</span>
-                  </span>
-                </div>
-                <Progress value={s.avg ?? 0} target={s.target} color={colour.get(s.subjectId)} />
-              </div>
+              <Link key={s.subjectId} to={`/subjects/${s.subjectId}`} className="tg-row compact" style={{ ['--c' as string]: colour.get(s.subjectId) }}>
+                <span className="tg-badge">{code?.slice(0, 3) ?? title.slice(0, 2)}</span>
+                <span className="tg-name">
+                  {title}
+                  <small>{s.avg == null ? 'No marks yet' : on ? 'On track' : 'Behind'}</small>
+                </span>
+                <span className="tg-range">
+                  <RangeLine value={s.avg} target={s.target} />
+                </span>
+                <span className={on ? 'tg-avg num ok' : 'tg-avg num'}>
+                  {s.avg == null ? '–' : `${Math.round(s.avg)}%`}
+                  <small>/ {s.target}</small>
+                </span>
+              </Link>
             );
           })}
         </div>
       )}
-    </Card>
+    </Panel>
   );
 }
 
@@ -179,17 +207,16 @@ function BackupCard() {
   const st = settings.use();
   const days = st.lastBackupAt ? Math.floor((Date.now() - st.lastBackupAt) / 86_400_000) : null;
   return (
-    <Card index={8}>
-      <CardHead icon={<Download size={18} strokeWidth={1.7} />} tone="gold" title="Back up your data" />
+    <Panel index={8} title="Back up your data" className="aura-orange">
       <p className="muted small" style={{ marginBottom: 16 }}>
         {st.lastBackupAt
           ? `Last backup ${days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`} (${new Date(st.lastBackupAt).toLocaleDateString()}).`
           : 'No backup yet. Everything lives in this browser only.'}
       </p>
-      <Button variant={days == null || days >= 7 ? 'primary' : undefined} onClick={exportBackup}>
-        Export JSON backup
-      </Button>
-    </Card>
+      <button type="button" className="white-pill" onClick={exportBackup}>
+        <Download size={14} strokeWidth={2} /> Export JSON backup
+      </button>
+    </Panel>
   );
 }
 
@@ -204,9 +231,9 @@ function History({ data, current }: { data: AllData; current: string }) {
     })
     .sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1));
   return (
-    <Card index={9}>
-      <div className="card-head">
-        <h2>Past check-ins</h2>
+    <Panel index={9}>
+      <div className="panel-head">
+        <h2>Past reviews</h2>
         <div className="row" style={{ marginLeft: 'auto', flexWrap: 'nowrap' }}>
           <Search size={16} strokeWidth={1.5} className="muted" />
           <input className="input sm" style={{ width: 220 }} placeholder="Search check-ins" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search check-ins" />
@@ -231,6 +258,6 @@ function History({ data, current }: { data: AllData; current: string }) {
           ))}
         </div>
       )}
-    </Card>
+    </Panel>
   );
 }

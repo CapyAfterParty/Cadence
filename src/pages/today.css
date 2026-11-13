@@ -1056,7 +1056,7 @@
 @media (max-width: 900px) {
   .tl-head,
   .tl-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .tl-now {
     display: none;
@@ -1088,7 +1088,12 @@
 
 @media (max-width: 720px) {
   .h-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .h-cards > .hc {
+    aspect-ratio: auto;
+    min-height: 34rem;
   }
 
   .h-strip {
